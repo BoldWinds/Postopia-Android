@@ -4,13 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.postopia.ui.components.BottomNavItem
+import com.postopia.ui.components.BottomNavigationBar
+import com.postopia.ui.home.HomeScreen
+import com.postopia.ui.post.PostScreen
+import com.postopia.ui.profile.ProfileScreen
+import com.postopia.ui.space.SpaceScreen
 import com.postopia.ui.theme.PostopiaTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +30,38 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PostopiaTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    PostopiaTheme {
-        Greeting("Android")
+fun MainScreen() {
+    val navController = rememberNavController()
+
+    val screens = listOf(
+        BottomNavItem("home", Icons.Default.Home, "Home"),
+        BottomNavItem("post", Icons.Default.Add, "Post"),
+        BottomNavItem("space", Icons.Default.Place, "Space"),
+        BottomNavItem("profile", Icons.Default.Person, "Profile")
+    )
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(items = screens, navController = navController)
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") { HomeScreen(navController) }
+            composable("post") { PostScreen(navController) }
+            composable("space") { SpaceScreen(navController) }
+            composable("profile") { ProfileScreen(navController) }
+        }
     }
 }
