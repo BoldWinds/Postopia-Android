@@ -1,11 +1,10 @@
-package com.postopia.ui.message
+package com.postopia.ui.auth
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
-
 @Composable
-fun MessageScreen(){
-    Text("Message Screen",color= MaterialTheme.colorScheme.primary)
+fun RegisterScreen(){
+    Text("Register Screen",color= MaterialTheme.colorScheme.primary)
 }

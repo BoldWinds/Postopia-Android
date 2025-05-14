@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.postopia.ui.auth.RegisterScreen
 import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
 import com.postopia.ui.post.PostScreen
@@ -21,10 +22,11 @@ fun AppNavHost(
         startDestination = "home",
         modifier = modifier
     ) {
-        composable("home") { HomeScreen(navController) }
-        composable("space") { SpaceScreen(navController) }
-        composable("post") { PostScreen(navController) }
-        composable("message") { MessageScreen(navController) }
-        composable("profile") { ProfileScreen(navController) }
+        composable("home") { HomeScreen() }
+        composable("space") { SpaceScreen() }
+        composable("post") { PostScreen() }
+        composable("message") { MessageScreen() }
+        composable("profile") { ProfileScreen() }
+        composable("register") { RegisterScreen() }
     }
 }
