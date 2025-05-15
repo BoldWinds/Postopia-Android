@@ -19,14 +19,14 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = Screen.Home.route,
         modifier = modifier
     ) {
-        composable("home") { HomeScreen() }
-        composable("space") { SpaceScreen() }
-        composable("post") { PostScreen() }
-        composable("message") { MessageScreen() }
-        composable("profile") { ProfileScreen() }
-        composable("register") { RegisterScreen() }
+        composable(Screen.Home.route) { HomeScreen() }
+        composable(Screen.Space.route) { SpaceScreen() }
+        composable(Screen.Post.route) { PostScreen() }
+        composable(Screen.Message.route) { MessageScreen() }
+        composable(Screen.Profile.route) { ProfileScreen() }
+        composable(Screen.Register.route) { RegisterScreen() }
     }
 }
