@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -17,10 +22,17 @@ import com.postopia.ui.navigation.bottomNavItems
 fun MainScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
 
+    val currentRoute = navBackStackEntry?.destination?.route
     val hideBarsRoutes = listOf("register", "login")
-    val shouldShowBars = currentDestination?.route !in hideBarsRoutes
+    // 延迟更新 shouldShowBars，避免在内容切换前就显示栏位
+    var shouldShowBars by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentRoute) {
+        snapshotFlow { currentRoute }.collect { route ->
+            shouldShowBars = route !in hideBarsRoutes
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
