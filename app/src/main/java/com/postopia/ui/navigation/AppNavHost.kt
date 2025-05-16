@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.postopia.ui.auth.RegisterScreen
+import com.postopia.ui.auth.AuthScreen
 import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
 import com.postopia.ui.post.PostScreen
@@ -61,12 +61,11 @@ fun AppNavHost(
                 ProfileScreen()
         }
         composable(
-            Screen.Register.route,
+            Screen.Auth.route,
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-            RegisterScreen(
-                navigateToLogin = {},
+            AuthScreen(
                 navigateBack = {navController.popBackStack()}
             )
         }

@@ -24,7 +24,7 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     val currentRoute = navBackStackEntry?.destination?.route
-    val hideBarsRoutes = listOf("register", "login")
+    val hideBarsRoutes = listOf("auth")
     // 延迟更新 shouldShowBars，避免在内容切换前就显示栏位
     var shouldShowBars by remember { mutableStateOf(false) }
 
@@ -37,7 +37,7 @@ fun MainScreen() {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            if(shouldShowBars) TopBar({}, {}, {navController.navigate("register")})
+            if(shouldShowBars) TopBar({}, {}, {navController.navigate("auth")})
         },
         bottomBar = {
             if(shouldShowBars)  BottomNavigationBar(items = bottomNavItems, navController = navController)
