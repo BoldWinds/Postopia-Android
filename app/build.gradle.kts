@@ -77,9 +77,14 @@ dependencies {
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
+    implementation(libs.retrofit.converter.moshi)
 
     // OkHttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    // moshi
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    kapt(libs.moshi.codegen)
 }
