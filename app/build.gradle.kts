@@ -87,4 +87,9 @@ dependencies {
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
     kapt(libs.moshi.codegen)
+
+    // DataStore
+    // DataStore
+    implementation(libs.datastore.preferences)
+    implementation(libs.datastore.core)
 }
