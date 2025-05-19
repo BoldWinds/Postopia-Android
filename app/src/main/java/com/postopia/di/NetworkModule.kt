@@ -2,6 +2,7 @@ package com.postopia.di
 
 import com.postopia.data.remote.AuthInterceptor
 import com.postopia.data.remote.AuthRemoteDataSource
+import com.postopia.data.remote.util.UnitJsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -23,6 +24,7 @@ object NetworkModule {
     @Singleton
     fun provideMoshi(): Moshi {
         return Moshi.Builder()
+            .add(UnitJsonAdapter.FACTORY)
             .add(KotlinJsonAdapterFactory())
             .build()
     }
@@ -59,3 +61,4 @@ object NetworkModule {
         return retrofit.create(AuthRemoteDataSource::class.java)
     }
 }
+

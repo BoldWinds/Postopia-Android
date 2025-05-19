@@ -9,10 +9,11 @@ import retrofit2.http.POST
 
 interface AuthRemoteDataSource {
     @POST("user/auth/signup")
-    suspend fun register(@Body request: RegisterRequest): ApiResponse<Nothing>
+    suspend fun register(@Body request: RegisterRequest): ApiResponse<Unit>
 
     @POST("user/auth/login")
     suspend fun login(@Body request: LoginRequest): ApiResponse<LoginResponse>
 
     //TODO refresh
 }
+
