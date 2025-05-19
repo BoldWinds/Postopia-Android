@@ -1,11 +1,15 @@
 package com.postopia.ui.auth
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.postopia.data.model.Result
+import com.postopia.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class AuthUiState(
     val isRegister : Boolean = false,    // true为注册，false为登陆
@@ -30,7 +34,7 @@ sealed class AuthEvent {
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
@@ -47,10 +51,10 @@ class AuthViewModel @Inject constructor(
                 _uiState.update { it.copy(confirmPassword = event.confirmPassword) }
             }
             is AuthEvent.Register -> {
-                register()
+                register(_uiState.value.username, _uiState.value.password, _uiState.value.confirmPassword)
             }
             is AuthEvent.Login -> {
-                login()
+                login(_uiState.value.username, _uiState.value.password)
             }
             is AuthEvent.ClearError -> {
                 _uiState.update { it.copy(errorMessage = null) }
@@ -61,21 +65,20 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun register() {
-        val state = _uiState.value
+    private fun register(username : String, password : String, confirmPassword : String) {
 
         // 输入验证
-        if (state.username.isBlank() || state.password.isBlank()) {
+        if (username.isBlank() || password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "用户名和密码不能为空") }
             return
         }
 
-        if(state.username.contains(';')){
+        if(username.contains(';')){
             _uiState.update { it.copy(errorMessage = "用户名不能包含分号") }
             return
         }
 
-        if (state.password != state.confirmPassword) {
+        if (password != confirmPassword) {
             _uiState.update { it.copy(errorMessage = "密码不匹配") }
             return
         }
@@ -83,25 +86,54 @@ class AuthViewModel @Inject constructor(
         // 设置加载状态
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // TODO 实现注册逻辑
+        viewModelScope.launch {
+            authRepository.register(username, password).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _uiState.update { it.copy(isLoading = true) }
+                    }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = null, isRegister = false) }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                    }
+                }
+            }
+        }
     }
 
-    private fun login() {
+    private fun login(username : String, password : String) {
         val state = _uiState.value
 
         // 输入验证
-        if (state.username.isBlank() || state.password.isBlank()) {
+        if (username.isBlank() || password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "用户名和密码不能为空") }
             return
         }
 
-        if(state.username.contains(';')){
+        if(username.contains(';')){
             _uiState.update { it.copy(errorMessage = "用户名不能包含分号") }
             return
         }
 
         // 设置加载状态
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        // TODO 实现登陆
+
+        viewModelScope.launch {
+            authRepository.login(username, password).collect { result ->
+                when (result) {
+                    is Result.Loading -> {
+                        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                    }
+                    is Result.Success<*> -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                    }
+                }
+            }
+        }
     }
 }
