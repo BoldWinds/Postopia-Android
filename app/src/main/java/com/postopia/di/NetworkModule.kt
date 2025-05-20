@@ -49,7 +49,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://your-api-base-url.com/api/")
+            .baseUrl("https://m1.apifoxmock.com/m1/4777037-4430728-default/")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()

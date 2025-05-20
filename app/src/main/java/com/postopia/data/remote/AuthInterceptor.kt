@@ -1,12 +1,13 @@
 package com.postopia.data.remote
 
 import com.postopia.data.local.AuthLocalDataSource
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class AuthInterceptor @Inject constructor(
@@ -20,22 +21,19 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        // 跳过登录和注册端点的认证
         if (shouldSkipAuth(originalRequest)) {
             return chain.proceed(originalRequest)
         }
 
-        // 由于OkHttp拦截器不支持挂起函数，我们需要使用runBlocking
-        val accessToken = runBlocking { authLocalDataSource.getAccessToken() }
+        val tokenValue = runBlocking { authLocalDataSource.getAccessToken().firstOrNull() }
 
-        // 如果没有令牌，继续原始请求
-        /*if (accessToken.isNullOrEmpty()) {
+        if (tokenValue.isNullOrEmpty()) {
             return chain.proceed(originalRequest)
-        }*/
+        }
 
         // 添加令牌到请求
         val newRequest = originalRequest.newBuilder()
-            .header(HEADER_AUTHORIZATION, "Bearer $accessToken")
+            .header(HEADER_AUTHORIZATION, "Bearer $tokenValue")
             .build()
 
         return chain.proceed(newRequest)
@@ -43,6 +41,7 @@ class AuthInterceptor @Inject constructor(
 
     private fun shouldSkipAuth(request: Request): Boolean {
         val url = request.url.toString()
-        return url.contains("/user/auth/login") || url.contains("/user/auth/register")
+        return url.contains("/user/auth/")
     }
 }
+

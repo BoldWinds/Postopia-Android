@@ -22,6 +22,7 @@ data class RefreshTokenRequest(
 
 @JsonClass(generateAdapter = true)
 data class LoginResponse(
+    @Json(name = "userId") val userId: Int,
     @Json(name = "accessToken") val accessToken: String,
     @Json(name = "refreshToken") val refreshToken: String
 )
