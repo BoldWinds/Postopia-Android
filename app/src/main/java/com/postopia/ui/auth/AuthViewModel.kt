@@ -19,7 +19,8 @@ data class AuthUiState(
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    val navigateToHomeEvent: Boolean = false
 )
 
 sealed class AuthEvent {
@@ -30,6 +31,7 @@ sealed class AuthEvent {
     object Login : AuthEvent()
     object ChangeAuth : AuthEvent()
     object SnackbarMessageShown : AuthEvent()
+    object NavigationToHomeHandled : AuthEvent()
 }
 
 @HiltViewModel
@@ -61,6 +63,9 @@ class AuthViewModel @Inject constructor(
             }
             is AuthEvent.SnackbarMessageShown -> {
                 _uiState.update { it.copy(snackbarMessage = null) }
+            }
+            is AuthEvent.NavigationToHomeHandled -> {
+                _uiState.update { it.copy(navigateToHomeEvent = false) }
             }
         }
     }
@@ -124,7 +129,7 @@ class AuthViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoading = true, snackbarMessage = null) }
                     }
                     is Result.Success -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登陆成功！") }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登陆成功！", navigateToHomeEvent = true) }
                     }
                     is Result.Error -> {
                         _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }

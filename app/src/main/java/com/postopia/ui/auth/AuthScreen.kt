@@ -38,6 +38,7 @@ fun AuthScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
     navigateBack : () -> Unit,
+    navigateToHome: () -> Unit,
 ){
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -47,6 +48,14 @@ fun AuthScreen(
         uiState.snackbarMessage?.let { message ->
             sharedViewModel.showSnackbar(message)
             viewModel.handleEvent(AuthEvent.SnackbarMessageShown)
+        }
+    }
+
+    // 若用户登陆成功，则跳转主页
+    LaunchedEffect(uiState.navigateToHomeEvent) {
+        if (uiState.navigateToHomeEvent) {
+            navigateToHome()
+            viewModel.handleEvent(AuthEvent.NavigationToHomeHandled)
         }
     }
 

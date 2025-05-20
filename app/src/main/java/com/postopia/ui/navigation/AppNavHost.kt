@@ -69,7 +69,12 @@ fun AppNavHost(
         ) {
             AuthScreen(
                 sharedViewModel = sharedViewModel,
-                navigateBack = {navController.popBackStack()}
+                navigateBack = {navController.popBackStack()},
+                navigateToHome = {navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Auth.route) {
+                        inclusive = true
+                    }
+                }}
             )
         }
     }
