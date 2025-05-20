@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.ArrowBack
 import com.postopia.ui.components.AuthButton
 import com.postopia.ui.components.PasswordTextField
@@ -34,11 +36,19 @@ import com.postopia.ui.components.UsernameTextField
 @Composable
 fun AuthScreen(
     viewModel: AuthViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel,
     navigateBack : () -> Unit,
 ){
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val colorScheme = MaterialTheme.colorScheme
+
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            sharedViewModel.showSnackbar(message)
+            viewModel.handleEvent(AuthEvent.SnackbarMessageShown)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -93,16 +103,6 @@ fun AuthScreen(
                 )
             }
 
-            // 显示错误信息（如果有）
-            uiState.errorMessage?.let { error ->
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = error,
-                    color = colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
             Spacer(modifier = Modifier.height(30.dp))
 
             // 认证按钮
@@ -121,7 +121,6 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 条款和政策信息
-
             Text(
                 text = if(uiState.isRegister) "注册即表示您同意我们的服务条款和隐私政策" else "登陆即表示您同意我们的服务条款和隐私政策",
                 fontSize = 12.sp,
@@ -132,7 +131,6 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 返回登录页面链接
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -150,8 +148,6 @@ fun AuthScreen(
                     }
                 )
             }
-
-
         }
     }
 }

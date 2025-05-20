@@ -19,7 +19,7 @@ data class AuthUiState(
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val snackbarMessage: String? = null
 )
 
 sealed class AuthEvent {
@@ -28,8 +28,8 @@ sealed class AuthEvent {
     data class ConfirmPasswordChanged(val confirmPassword: String) : AuthEvent()
     object Register : AuthEvent()
     object Login : AuthEvent()
-    object ClearError : AuthEvent()
     object ChangeAuth : AuthEvent()
+    object SnackbarMessageShown : AuthEvent()
 }
 
 @HiltViewModel
@@ -56,35 +56,34 @@ class AuthViewModel @Inject constructor(
             is AuthEvent.Login -> {
                 login(_uiState.value.username, _uiState.value.password)
             }
-            is AuthEvent.ClearError -> {
-                _uiState.update { it.copy(errorMessage = null) }
+            is AuthEvent.ChangeAuth -> {
+                _uiState.update { it.copy(isRegister = !it.isRegister, snackbarMessage = null) }
             }
-            is AuthEvent.ChangeAuth ->{
-                _uiState.update { it.copy(isRegister = !it.isRegister) }
+            is AuthEvent.SnackbarMessageShown -> {
+                _uiState.update { it.copy(snackbarMessage = null) }
             }
         }
     }
 
     private fun register(username : String, password : String, confirmPassword : String) {
-
         // 输入验证
         if (username.isBlank() || password.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "用户名和密码不能为空") }
+            _uiState.update { it.copy(snackbarMessage = "用户名和密码不能为空") }
             return
         }
 
         if(username.contains(';')){
-            _uiState.update { it.copy(errorMessage = "用户名不能包含分号") }
+            _uiState.update { it.copy(snackbarMessage = "用户名不能包含分号") }
             return
         }
 
         if (password != confirmPassword) {
-            _uiState.update { it.copy(errorMessage = "密码不匹配") }
+            _uiState.update { it.copy(snackbarMessage = "密码不匹配") }
             return
         }
 
         // 设置加载状态
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, snackbarMessage = null) }
 
         viewModelScope.launch {
             authRepository.register(username, password).collect { result ->
@@ -93,10 +92,10 @@ class AuthViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoading = true) }
                     }
                     is Result.Success -> {
-                        _uiState.update { it.copy(isLoading = false, errorMessage = null, isRegister = false) }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "注册成功！请登录。", isRegister = false) }
                     }
                     is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
                     }
                 }
             }
@@ -104,33 +103,31 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun login(username : String, password : String) {
-        val state = _uiState.value
-
         // 输入验证
         if (username.isBlank() || password.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "用户名和密码不能为空") }
+            _uiState.update { it.copy(snackbarMessage = "用户名和密码不能为空") }
             return
         }
 
         if(username.contains(';')){
-            _uiState.update { it.copy(errorMessage = "用户名不能包含分号") }
+            _uiState.update { it.copy(snackbarMessage = "用户名不能包含分号") }
             return
         }
 
         // 设置加载状态
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true, snackbarMessage = null) }
 
         viewModelScope.launch {
             authRepository.login(username, password).collect { result ->
                 when (result) {
                     is Result.Loading -> {
-                        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                        _uiState.update { it.copy(isLoading = true, snackbarMessage = null) }
                     }
-                    is Result.Success<*> -> {
-                        _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登陆成功！") }
                     }
                     is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
                     }
                 }
             }
