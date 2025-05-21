@@ -20,9 +20,10 @@ data class SpaceAvatar(
 )
 
 @JsonClass(generateAdapter = true)
-data class SpacePart(
-    val name: String,
+data class SearchSpaceInfo(
+    val id: Long,
     val avatar: String,
-    val postCount: Long,
+    val createdAt: String,
     val memberCount: Long,
+    val postCount: Long
 )

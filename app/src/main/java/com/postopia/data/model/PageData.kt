@@ -6,5 +6,5 @@ import com.squareup.moshi.JsonClass
 data class PageData<T>(
     val currentPage: Long,
     val totalPage: Long,
-    val data: T? = null
+    val data: List<T>? = null
 )

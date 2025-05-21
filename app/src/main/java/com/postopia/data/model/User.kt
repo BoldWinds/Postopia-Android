@@ -3,15 +3,15 @@ package com.postopia.data.model
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class User(
-    val userId : Int,
+data class UserInfo(
+    val userId : Long,
     val username: String,
     val nickname: String = "",
     val avatar: String = "",
     val introduction: String,
-    val postCount : Int = 0 ,
-    val commentCount: Int = 0,
-    val credit : Int = 0,
+    val postCount : Long = 0 ,
+    val commentCount: Long = 0,
+    val credit : Long = 0,
 )
 
 @JsonClass(generateAdapter = true)
@@ -22,7 +22,7 @@ data class UserAvatar (
 
 @JsonClass(generateAdapter = true)
 data class UserDetail (
-    val userID: Int,
+    val userID: Long,
     val avatar: String,
     val commentCount: Long,
     val createdAt: String,
