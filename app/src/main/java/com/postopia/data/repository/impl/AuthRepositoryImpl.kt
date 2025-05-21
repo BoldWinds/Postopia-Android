@@ -41,11 +41,7 @@ class AuthRepositoryImpl @Inject constructor(
             val response = remoteDataSource.login(request)
 
             if (response.isSuccessful() && response.data != null) {
-                val credential = Credential(
-                        userId = response.data.userId,
-                        accessToken = response.data.accessToken,
-                        refreshToken = response.data.refreshToken
-                    )
+                val credential = response.requireData()
                 localDataSource.saveCredential(credential)
                 emit(Result.Success(credential))
             } else {

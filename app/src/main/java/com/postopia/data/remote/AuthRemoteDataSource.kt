@@ -1,8 +1,8 @@
 package com.postopia.data.remote
 
 import com.postopia.data.model.ApiResponse
+import com.postopia.data.model.Credential
 import com.postopia.data.remote.dto.LoginRequest
-import com.postopia.data.remote.dto.LoginResponse
 import com.postopia.data.remote.dto.RefreshTokenRequest
 import com.postopia.data.remote.dto.RegisterRequest
 import retrofit2.http.Body
@@ -13,7 +13,7 @@ interface AuthRemoteDataSource {
     suspend fun register(@Body request: RegisterRequest): ApiResponse<Unit>
 
     @POST("user/auth/login")
-    suspend fun login(@Body request: LoginRequest): ApiResponse<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): ApiResponse<Credential>
 
     @POST("user/auth/refresh")
     suspend fun refresh(@Body request : RefreshTokenRequest) : ApiResponse<String>
