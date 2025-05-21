@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class PageData<T>(
-    val currentPage: Int,
-    val totalPage: Int,
+    val currentPage: Long,
+    val totalPage: Long,
     val data: T? = null
 )

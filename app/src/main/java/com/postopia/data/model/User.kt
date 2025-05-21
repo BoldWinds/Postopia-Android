@@ -22,6 +22,7 @@ data class UserAvatar (
 
 @JsonClass(generateAdapter = true)
 data class UserDetail (
+    val userID: Int,
     val avatar: String,
     val commentCount: Long,
     val createdAt: String,
@@ -31,7 +32,6 @@ data class UserDetail (
     val nickname: String,
     val postCount: Long,
     val showEmail: Boolean,
-    val userID: Long,
     val username: String
 )
 
