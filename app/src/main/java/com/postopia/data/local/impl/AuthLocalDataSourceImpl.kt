@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.postopia.data.local.AuthLocalDataSource
@@ -23,7 +23,7 @@ class AuthLocalDataSourceImpl @Inject constructor(
 ) : AuthLocalDataSource{
 
     private object PreferencesKeys {
-        val USERID = intPreferencesKey("userId")
+        val USERID = longPreferencesKey("userId")
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
     }
@@ -44,7 +44,7 @@ class AuthLocalDataSourceImpl @Inject constructor(
         preferences[PreferencesKeys.REFRESH_TOKEN]
     }
 
-    override fun getUserId(): Flow<Int?> = context.dataStore.data.map { preferences ->
+    override fun getUserId(): Flow<Long?> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USERID]
     }
 
@@ -60,7 +60,7 @@ class AuthLocalDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveUserId(id: Int) {
+    override suspend fun saveUserId(id: Long) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USERID] = id
         }

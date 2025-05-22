@@ -11,11 +11,11 @@ interface AuthLocalDataSource {
 
     suspend fun saveRefreshToken(token: String)
 
-    suspend fun saveUserId(id: Int)
+    suspend fun saveUserId(id: Long)
 
     fun getAccessToken(): Flow<String?>
 
     fun getRefreshToken(): Flow<String?>
 
-    fun getUserId() : Flow<Int?>
+    fun getUserId() : Flow<Long?>
 }
