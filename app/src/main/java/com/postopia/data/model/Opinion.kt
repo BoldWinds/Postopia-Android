@@ -9,7 +9,6 @@ data class OpinionInfo (
     val updatedAt: String
 )
 
-@JsonClass(generateAdapter = true)
 enum class OpinionStatus {
     Negative,
     Nil,

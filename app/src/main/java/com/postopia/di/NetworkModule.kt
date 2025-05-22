@@ -2,7 +2,10 @@ package com.postopia.di
 
 import com.postopia.data.remote.AuthInterceptor
 import com.postopia.data.remote.AuthRemoteDataSource
+import com.postopia.data.remote.CommentRemoteDataSource
+import com.postopia.data.remote.PostRemoteDataSource
 import com.postopia.data.remote.SpaceRemoteDataSource
+import com.postopia.data.remote.UserRemoteDataSource
 import com.postopia.data.remote.util.UnitJsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -66,6 +69,24 @@ object NetworkModule {
     @Singleton
     fun provideSpaceRemoteDataSource(retrofit: Retrofit) : SpaceRemoteDataSource {
         return retrofit.create(SpaceRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRemoteDataSource(retrofit: Retrofit): UserRemoteDataSource {
+        return retrofit.create(UserRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePostRemoteDataSource(retrofit: Retrofit): PostRemoteDataSource {
+        return retrofit.create(PostRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCommentRemoteDataSource(retrofit: Retrofit): CommentRemoteDataSource {
+        return retrofit.create(CommentRemoteDataSource::class.java)
     }
 }
 

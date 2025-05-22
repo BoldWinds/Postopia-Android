@@ -66,7 +66,6 @@ data class SpaceVoteInfo (
     val vote: SpaceVotePart
 )
 
-@JsonClass(generateAdapter = true)
 enum class DetailVoteType {
     PIN_COMMENT,
     UNPIN_COMMENT,
