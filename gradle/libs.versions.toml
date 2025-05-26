@@ -20,6 +20,7 @@ datastore = "1.1.7"
 ksp = "2.0.0-1.0.21"
 protobuf = "3.25.1"
 protobuf-plugin = "0.9.4"  # dont change
+coil = "2.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,6 +64,9 @@ datastore-preferences-core = { group = "androidx.datastore", name = "datastore-p
 datastore-proto = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-proto-core = { module = "androidx.datastore:datastore-core", version.ref = "datastore" }
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
+
+#coil
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
