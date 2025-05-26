@@ -1,7 +1,9 @@
 package com.postopia.di
 
 import com.postopia.data.local.AuthLocalDataSource
+import com.postopia.data.local.UserLocalDataSource
 import com.postopia.data.local.impl.AuthLocalDataSourceImpl
+import com.postopia.data.local.impl.UserLocalDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,5 +19,11 @@ abstract class LocalModule {
     abstract fun bindAuthLocalDataSource(
         authLocalDataSourceImpl: AuthLocalDataSourceImpl
     ): AuthLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindUserLocalDataSource(
+        userLocalDataSourceImpl: UserLocalDataSourceImpl
+    ): UserLocalDataSource
 }
 

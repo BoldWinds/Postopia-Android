@@ -60,7 +60,7 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                ProfileScreen()
+                ProfileScreen(sharedViewModel = sharedViewModel)
         }
         composable(
             Screen.Auth.route,

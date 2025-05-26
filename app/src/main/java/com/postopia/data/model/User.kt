@@ -17,12 +17,12 @@ data class UserInfo(
 @JsonClass(generateAdapter = true)
 data class UserAvatar (
     val avatar: String,
-    val userID: Long
+    val userId: Long
 )
 
 @JsonClass(generateAdapter = true)
 data class UserDetail (
-    val userID: Long,
+    val userId: Long,
     val avatar: String,
     val commentCount: Long,
     val createdAt: String,

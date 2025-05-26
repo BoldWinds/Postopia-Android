@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "com.postopia.proto";
+option java_multiple_files = true;
+
+message UserProto {
+  int64 userID = 1;
+  string avatar = 2;
+  int64 commentCount = 3;
+  string createdAt = 4;
+  int64 credit = 5;
+  string email = 6;
+  string introduction = 7;
+  string nickname = 8;
+  int64 postCount = 9;
+  bool showEmail = 10;
+  string username = 11;
+}
+
