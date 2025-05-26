@@ -90,5 +90,7 @@ dependencies {
 
     // DataStore
     implementation(libs.datastore.preferences)
+    implementation(libs.datastore.preferences.core)
+    implementation(libs.datastore)
     implementation(libs.datastore.core)
 }
