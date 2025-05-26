@@ -4,6 +4,22 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.protobuf)
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") {
+                    option("lite")
+                }
+            }
+        }
+    }
 }
 
 android {
@@ -39,6 +55,9 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Added protobuf configuration
+    sourceSets["main"].java.srcDirs("src/main/java", "src/main/proto")
 }
 
 kotlin {
@@ -91,6 +110,8 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
     implementation(libs.datastore.preferences.core)
-    implementation(libs.datastore)
-    implementation(libs.datastore.core)
+    implementation(libs.datastore.proto)
+    implementation(libs.datastore.proto.core)
+    implementation(libs.protobuf.javalite)
 }
+
