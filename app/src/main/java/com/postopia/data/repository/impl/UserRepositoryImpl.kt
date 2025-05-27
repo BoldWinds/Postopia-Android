@@ -19,7 +19,7 @@ class UserRepositoryImpl @Inject constructor(
         try {
             val user = UserDetail(
                 userId = 1,
-                avatar = "",
+                avatar = "https://res.cloudinary.com/dz2tishzo/image/upload/v1744035577/2025-conference-cat_yylqqz.jpg",
                 commentCount = 1001,
                 credit = 114514,
                 email = "whateverlbw@gmail.com",

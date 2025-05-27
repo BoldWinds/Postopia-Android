@@ -14,6 +14,7 @@ import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
 import com.postopia.ui.post.PostScreen
 import com.postopia.ui.profile.ProfileScreen
+import com.postopia.ui.space.SpaceDetailScreen
 import com.postopia.ui.space.SpaceScreen
 
 @Composable
@@ -39,7 +40,12 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                SpaceScreen()
+                SpaceScreen(
+                    sharedViewModel = sharedViewModel,
+                    navigateToSpaceDetail = { spaceId ->
+                        navController.navigate(Screen.SpaceDetail.createRoute(spaceId))
+                    }
+                )
         }
         composable(
             Screen.Post.route,
@@ -75,6 +81,20 @@ fun AppNavHost(
                         inclusive = true
                     }
                 }}
+            )
+        }
+
+        composable(
+            route = Screen.SpaceDetail.route,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) { backStackEntry ->
+            val spaceId = backStackEntry.arguments?.getLong("spaceId") ?: 0L
+
+            SpaceDetailScreen(
+                spaceId = spaceId,
+                navigateBack = { navController.popBackStack() },
+                sharedViewModel = sharedViewModel
             )
         }
     }

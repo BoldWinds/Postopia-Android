@@ -33,13 +33,15 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val currentRoute = navBackStackEntry?.destination?.route
-    val hideBarsRoutes = listOf("auth")
+    val hideBarsRoutes = listOf("auth", "space_detail", "post_detail")
     // 延迟更新 shouldShowBars，避免在内容切换前就显示栏位
     var shouldShowBars by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentRoute) {
         snapshotFlow { currentRoute }.collect { route ->
-            shouldShowBars = route !in hideBarsRoutes
+            shouldShowBars = route?.let { currentRoute ->
+                hideBarsRoutes.none { hiddenRoute -> currentRoute.contains(hiddenRoute) }
+            } == true
         }
     }
 
@@ -53,6 +55,7 @@ fun MainScreen(
         }
     }
 
+    // TODO 优化topBar
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState){ data ->

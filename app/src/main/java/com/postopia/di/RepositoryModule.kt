@@ -1,8 +1,10 @@
 package com.postopia.di
 
 import com.postopia.data.repository.AuthRepository
+import com.postopia.data.repository.SpaceRepository
 import com.postopia.data.repository.UserRepository
 import com.postopia.data.repository.impl.AuthRepositoryImpl
+import com.postopia.data.repository.impl.SpaceRepositoryImpl
 import com.postopia.data.repository.impl.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -22,4 +24,9 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         userRepositoryImpl: UserRepositoryImpl
     ): UserRepository
+
+    @Binds
+    abstract fun bindSpaceRepository(
+        spaceRepositoryImpl: SpaceRepositoryImpl
+    ): SpaceRepository
 }
