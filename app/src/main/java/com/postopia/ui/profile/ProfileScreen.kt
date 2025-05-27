@@ -44,7 +44,6 @@ import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentList
 import com.postopia.ui.components.LoadingContainer
 import com.postopia.ui.components.PostList
-import com.postopia.ui.components.StatItem
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -281,6 +280,30 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun StatItem(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
