@@ -26,8 +26,6 @@ import com.postopia.ui.components.TopBar
 import com.postopia.ui.navigation.AppNavHost
 import com.postopia.ui.navigation.bottomNavItems
 
-private const val TAG = "MainScreen"
-
 @Composable
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel()

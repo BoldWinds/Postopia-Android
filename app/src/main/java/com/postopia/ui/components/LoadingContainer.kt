@@ -13,16 +13,23 @@ fun LoadingContainer(
     isLoading : Boolean,
     successContent: @Composable () -> Unit
 ) {
-    if(isLoading){
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            PulsingDotsLoader()
-        }
-    }else{
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        // 始终显示内容
         successContent()
+
+        // 如果正在加载，显示加载动画覆盖在上面
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 1.0f)),
+                contentAlignment = Alignment.Center
+            ) {
+                PulsingDotsLoader()
+            }
+        }
     }
 }
