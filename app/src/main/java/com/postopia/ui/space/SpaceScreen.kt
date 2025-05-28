@@ -39,7 +39,6 @@ import com.postopia.R
 import com.postopia.data.model.SpaceInfo
 import com.postopia.data.model.SpacePart
 import com.postopia.ui.SharedViewModel
-import com.postopia.ui.components.LoadingContainer
 
 @Composable
 fun SpaceScreen(
@@ -56,20 +55,12 @@ fun SpaceScreen(
         }
     }
 
-    LoadingContainer(uiState.isLoading) {
-        SpaceContent(
-            viewModel = viewModel,
-            navigateToSpaceDetail = navigateToSpaceDetail
-        )
+    LaunchedEffect(uiState.isLoading) {
+        uiState.isLoading.let { isLoading ->
+            sharedViewModel.setLoading(isLoading)
+        }
     }
-}
 
-@Composable
-fun SpaceContent(
-    viewModel: SpaceViewModel,
-    navigateToSpaceDetail: (Long) -> Unit
-) {
-    val uiState by viewModel.uiState.collectAsState()
     val popularSpaces = uiState.popularSpaces
     val userSpaces = uiState.userSpaces
 

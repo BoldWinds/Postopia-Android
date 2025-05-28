@@ -26,7 +26,7 @@ sealed class ProfileEvent {
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -48,28 +48,30 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun loadUserProfile() {
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             userRepository.getCurrentUser().collect { result ->
-                when(result) {
-                    is Result.Loading -> {
-                        _uiState.update { it.copy(isLoading = true) }
-                    }
+                when (result) {
+                    is Result.Loading -> {}
                     is Result.Success -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "Debug: success", userDetail = result.data) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                userDetail = result.data,
+                                snackbarMessage = "Profile loaded successfully"
+                            )
+                        }
                     }
                     is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                snackbarMessage = result.message
+                            )
+                        }
                     }
                 }
             }
         }
-        _uiState.update { it.copy(isLoading = false) }
-    }
-
-    fun refreshProfile() {
-    }
-
-    fun updateProfile(updatedUserDetail: UserDetail) {
-
     }
 }

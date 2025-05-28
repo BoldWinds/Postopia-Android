@@ -9,6 +9,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,9 +21,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.postopia.ui.components.BottomNavigationBar
+import com.postopia.ui.components.LoadingContainer
 import com.postopia.ui.components.TopBar
 import com.postopia.ui.navigation.AppNavHost
 import com.postopia.ui.navigation.bottomNavItems
+
+private const val TAG = "MainScreen"
 
 @Composable
 fun MainScreen(
@@ -55,6 +59,8 @@ fun MainScreen(
         }
     }
 
+    val isLoading by sharedViewModel.isLoading.collectAsState()
+
     // TODO 优化topBar
     Scaffold(
         snackbarHost = {
@@ -72,13 +78,15 @@ fun MainScreen(
             if(shouldShowBars) TopBar({}, {}, {navController.navigate("auth")})
         },
         bottomBar = {
-            if(shouldShowBars)  BottomNavigationBar(items = bottomNavItems, navController = navController)
+            if(shouldShowBars) BottomNavigationBar(items = bottomNavItems, navController = navController)
         }
     ) { innerPadding ->
-        AppNavHost(
-            navController = navController,
-            modifier = Modifier.padding(innerPadding),
-            sharedViewModel = sharedViewModel
-        )
+        LoadingContainer(isLoading = isLoading) {
+            AppNavHost(
+                navController = navController,
+                modifier = Modifier.padding(innerPadding),
+                sharedViewModel = sharedViewModel
+            )
+        }
     }
 }

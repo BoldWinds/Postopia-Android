@@ -13,16 +13,16 @@ fun LoadingContainer(
     isLoading : Boolean,
     successContent: @Composable () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = if (isLoading) Alignment.Center else Alignment.TopStart
-    ) {
-        if(isLoading){
+    if(isLoading){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
             PulsingDotsLoader()
-        } else {
-            successContent()
         }
+    }else{
+        successContent()
     }
 }

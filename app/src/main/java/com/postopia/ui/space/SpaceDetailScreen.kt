@@ -35,7 +35,6 @@ import coil.compose.AsyncImage
 import com.postopia.data.model.SpacePart
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.ArrowBack
-import com.postopia.ui.components.LoadingContainer
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -60,28 +59,29 @@ fun SpaceDetailScreen(
         }
     }
 
-    LoadingContainer(uiState.isLoading) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ArrowBack { navigateBack() }
-
-            SpaceDetailTopBar(
-                spacePart = space,
-                onJoinClick = {
-                    viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join = isMember == true))
-                }
-            )
-
-            // 空间详情信息
-            SpaceDetailInfo(spacePart = space)
-
-            // TODO 空间帖子列表
-            Text("TODO Space posts here")
+    LaunchedEffect(uiState.isLoading) {
+        uiState.isLoading.let { isLoading ->
+            sharedViewModel.setLoading(isLoading)
         }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ArrowBack { navigateBack() }
+        SpaceDetailTopBar(
+            spacePart = space,
+            onJoinClick = {
+                viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join = isMember == true))
+            }
+        )
+        // 空间详情信息
+        SpaceDetailInfo(spacePart = space)
+        // TODO 空间帖子列表
+        Text("TODO Space posts here")
     }
 }
 

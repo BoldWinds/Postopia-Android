@@ -42,14 +42,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentList
-import com.postopia.ui.components.LoadingContainer
-import com.postopia.ui.components.PostList
 import com.postopia.utils.DateUtils
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    sharedViewModel : SharedViewModel
+    sharedViewModel: SharedViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -60,14 +58,12 @@ fun ProfileScreen(
         }
     }
 
-    LoadingContainer(uiState.isLoading) {
-        ProfileContent(viewModel)
+    LaunchedEffect(uiState.isLoading) {
+        uiState.isLoading.let { isLoading ->
+            sharedViewModel.setLoading(isLoading)
+        }
     }
-}
 
-@Composable
-private fun ProfileContent(viewModel : ProfileViewModel) {
-    val uiState by viewModel.uiState.collectAsState()
     val userDetail = uiState.userDetail
     val selectedTab = uiState.selectedTab
     val tabs = listOf("Posts", "Comments", "About")
@@ -106,9 +102,7 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                                 .background(MaterialTheme.colorScheme.primaryContainer),
                             contentScale = ContentScale.Crop
                         )
-
                         Spacer(modifier = Modifier.width(16.dp))
-
                         Column {
                             Text(
                                 text = userDetail?.nickname ?: "Unknown User",
@@ -129,9 +123,7 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(20.dp))
-
                 // Stats Row
                 Row(
                     modifier = Modifier
@@ -144,7 +136,6 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                         value = userDetail?.postCount.toString(),
                         label = "Posts"
                     )
-
                     // 垂直分割线
                     Box(
                         modifier = Modifier
@@ -152,12 +143,10 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                             .width(1.dp)
                             .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
                     )
-
                     StatItem(
                         value = userDetail?.commentCount.toString(),
                         label = "Comments"
                     )
-
                     // 垂直分割线
                     Box(
                         modifier = Modifier
@@ -165,13 +154,11 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                             .width(1.dp)
                             .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
                     )
-
                     StatItem(
                         value = userDetail?.credit.toString(),
                         label = "Credit"
                     )
                 }
-
                 // Email
                 if (userDetail?.email != null) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -195,11 +182,9 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                 }
             }
         }
-
         item {
             Spacer(modifier = Modifier.height(16.dp))
         }
-
         // Tab Section
         item {
             Column(
@@ -223,8 +208,7 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                         Tab(
                             selected = selectedTab == index,
                             onClick = {
-                                viewModel.handleEvent(ProfileEvent.ChangeTab(index))
-                            },
+                                viewModel.handleEvent(ProfileEvent.ChangeTab(index)) },
                             text = {
                                 Text(
                                     text = title,
@@ -241,7 +225,6 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                 }
             }
         }
-
         // Content based on selected tab
         item {
             Box(
@@ -252,7 +235,7 @@ private fun ProfileContent(viewModel : ProfileViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 when (selectedTab) {
-                    0 -> PostList()
+                    0 -> {}//PostList()
                     1 -> CommentList()
                     2 -> {
                         if (userDetail?.introduction.toString().isNotEmpty()) {
