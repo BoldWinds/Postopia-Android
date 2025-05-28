@@ -13,4 +13,8 @@ interface SpaceRepository {
 
     suspend fun getSpace(spaceID : Long): Flow<Result<SpaceInfo>>
 
+    suspend fun joinSpace(spaceID: Long): Flow<Result<Unit>>
+
+    suspend fun leaveSpace(spaceID: Long): Flow<Result<Unit>>
+
 }

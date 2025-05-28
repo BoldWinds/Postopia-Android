@@ -111,5 +111,25 @@ class SpaceRepositoryImpl @Inject constructor(
             emit(Result.Error(e))
         }
     }
+
+    override suspend fun joinSpace(spaceID: Long): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try {
+            // TODO join space
+            emit(Result.Success(Unit))
+        }catch (e : Exception){
+            emit(Result.Error(e))
+        }
+    }
+
+    override suspend fun leaveSpace(spaceID: Long): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try {
+            // TODO leave space
+            emit(Result.Success(Unit))
+        }catch (e : Exception){
+            emit(Result.Error(e))
+        }
+    }
 }
 

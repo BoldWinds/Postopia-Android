@@ -86,7 +86,36 @@ class SpaceViewModel @Inject constructor(
     }
 
     fun joinOrLeave(id : Long, join : Boolean) {
-        // TODO join/leave space
+        // TODO 更新 UI 状态
+        if(join){
+            viewModelScope.launch {
+                spaceRepository.joinSpace(id).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Success -> {
+                            _uiState.update { it.copy(isLoading = false, snackbarMessage = "Joined space successfully") }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                        }
+                    }
+                }
+            }
+        }else{
+            viewModelScope.launch {
+                spaceRepository.leaveSpace(id).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Success -> {
+                            _uiState.update { it.copy(isLoading = false, snackbarMessage = "Left space successfully") }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun loadSpaceDetail(spaceId: Long) {
