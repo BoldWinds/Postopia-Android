@@ -7,4 +7,11 @@ data class PageData<T>(
     val currentPage: Long,
     val totalPage: Long,
     val data: List<T>? = null
-)
+){
+    fun requireData(): List<T> {
+        if (data == null) {
+            throw IllegalStateException("No data")
+        }
+        return data
+    }
+}

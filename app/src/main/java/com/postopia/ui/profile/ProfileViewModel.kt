@@ -48,7 +48,6 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun loadUserProfile() {
-        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             userRepository.getCurrentUser().collect { result ->
                 when (result) {
@@ -58,7 +57,6 @@ class ProfileViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 userDetail = result.data,
-                                snackbarMessage = "Profile loaded successfully"
                             )
                         }
                     }

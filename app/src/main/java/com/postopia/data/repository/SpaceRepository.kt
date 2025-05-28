@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface SpaceRepository {
 
-    suspend fun getPopularSpaces(): Flow<Result<List<SpaceInfo>>>
+    suspend fun getPopularSpaces(page : Int = 0): Flow<Result<List<SpaceInfo>>>
 
-    suspend fun getUserSpaces() : Flow<Result<List<SpacePart>>>
+    suspend fun getUserSpaces(page : Int = 0) : Flow<Result<List<SpacePart>>>
 
     suspend fun getSpace(spaceID : Long): Flow<Result<SpaceInfo>>
 

@@ -59,9 +59,7 @@ fun ProfileScreen(
     }
 
     LaunchedEffect(uiState.isLoading) {
-        uiState.isLoading.let { isLoading ->
-            sharedViewModel.setLoading(isLoading)
-        }
+        sharedViewModel.setLoading(uiState.isLoading)
     }
 
     val userDetail = uiState.userDetail
@@ -289,4 +287,3 @@ fun StatItem(
         )
     }
 }
-

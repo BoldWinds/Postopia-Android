@@ -17,20 +17,14 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getCurrentUser(): Flow<Result<UserDetail>> = flow {
         emit(Result.Loading)
         try {
-            val user = UserDetail(
-                userId = 1,
-                avatar = "https://res.cloudinary.com/dz2tishzo/image/upload/v1744035577/2025-conference-cat_yylqqz.jpg",
-                commentCount = 1001,
-                credit = 114514,
-                email = "whateverlbw@gmail.com",
-                introduction = "Hi, this is boldwinds",
-                nickname = "boldwinds",
-                postCount = 11,
-                showEmail = true,
-                username = "lbw",
-                createdAt = "1748327655",
-            )
-            emit(Result.Success(user))
+            val response = remoteDataSource.getUserDetail(null)
+            if (response.isSuccessful()) {
+                val user = response.requireData()
+                emit(Result.Success(user))
+                localDataSource.cacheUserDetail(user.userId.toString(), user)
+            } else {
+                emit(Result.Error(Exception(response.message)))
+            }
         }catch (e : Exception){
             emit(Result.Error(e))
         }

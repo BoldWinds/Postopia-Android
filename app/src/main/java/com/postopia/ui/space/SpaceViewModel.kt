@@ -86,14 +86,13 @@ class SpaceViewModel @Inject constructor(
     }
 
     fun joinOrLeave(id : Long, join : Boolean) {
-        // TODO 更新 UI 状态
         if(join){
             viewModelScope.launch {
                 spaceRepository.joinSpace(id).collect { result ->
                     when (result) {
                         is Result.Loading -> {}
                         is Result.Success -> {
-                            _uiState.update { it.copy(isLoading = false, snackbarMessage = "Joined space successfully") }
+                            _uiState.update { it.copy(isLoading = false) }
                         }
                         is Result.Error -> {
                             _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
@@ -107,7 +106,7 @@ class SpaceViewModel @Inject constructor(
                     when (result) {
                         is Result.Loading -> {}
                         is Result.Success -> {
-                            _uiState.update { it.copy(isLoading = false, snackbarMessage = "Left space successfully") }
+                            _uiState.update { it.copy(isLoading = false) }
                         }
                         is Result.Error -> {
                             _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
