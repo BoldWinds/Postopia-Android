@@ -33,7 +33,7 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                HomeScreen()
+                HomeScreen(sharedViewModel = sharedViewModel)
         }
         composable(
             Screen.Space.route,

@@ -5,29 +5,30 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class PostPart (
     val id: Long,
-    val userID: Long,
-    val commentCount: Long,
+    val userId: Long,
+    val subject: String,
     val content: String,
-    val createdAt: String,
     val isArchived: Boolean,
+    val commentCount: Long,
     val negativeCount: Long,
     val positiveCount: Long,
-    val subject: String,
+    val createdAt: String,
+
 )
 
 @JsonClass(generateAdapter = true)
 data class FeedPostPart (
-    val commentCount: Long,
-    val content: String,
-    val createdAt: String,
     val id: Long,
+    val userId: Long,
+    val subject: String,
+    val spaceId: Long,
+    val spaceName: String,
+    val content: String,
     val isArchived: Boolean,
+    val commentCount: Long,
     val negativeCount: Long,
     val positiveCount: Long,
-    val spaceID: Long,
-    val spaceName: String,
-    val subject: String,
-    val userID: Long
+    val createdAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -65,3 +66,52 @@ data class CommentPostInfo (
     val spaceName: String,
     val subject: String
 )
+
+
+fun PostPart.toFeedPostPart(spaceId: Long, spaceName: String): FeedPostPart {
+    return FeedPostPart(
+        id = this.id,
+        userId = this.userId,
+        subject = this.subject,
+        spaceId = spaceId,
+        spaceName = spaceName,
+        content = this.content,
+        isArchived = this.isArchived,
+        commentCount = this.commentCount,
+        negativeCount = this.negativeCount,
+        positiveCount = this.positiveCount,
+        createdAt = this.createdAt
+    )
+}
+
+fun FeedPostPart.toPostPart(): PostPart {
+    return PostPart(
+        id = this.id,
+        userId = this.userId,
+        subject = this.subject,
+        content = this.content,
+        isArchived = this.isArchived,
+        commentCount = this.commentCount,
+        negativeCount = this.negativeCount,
+        positiveCount = this.positiveCount,
+        createdAt = this.createdAt
+    )
+}
+
+fun PostInfo.toFeedPostInfo(spaceId: Long = 0, spaceName: String = ""): FeedPostInfo {
+    return FeedPostInfo(
+        opinion = this.opinion,
+        post = this.post.toFeedPostPart(spaceId, spaceName),
+        user = this.user,
+        vote = this.vote
+    )
+}
+
+fun FeedPostInfo.toPostInfo(): PostInfo {
+    return PostInfo(
+        opinion = this.opinion,
+        post = this.post.toPostPart(),
+        user = this.user,
+        vote = this.vote
+    )
+}
