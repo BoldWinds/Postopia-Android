@@ -56,9 +56,7 @@ fun SpaceScreen(
     }
 
     LaunchedEffect(uiState.isLoading) {
-        uiState.isLoading.let { isLoading ->
-            sharedViewModel.setLoading(isLoading)
-        }
+        sharedViewModel.setLoading(uiState.isLoading)
     }
 
     val popularSpaces = uiState.popularSpaces
@@ -90,20 +88,28 @@ fun SpaceScreen(
         }
 
         // 用户空间部分
+        item {
+            Text(
+                text = "Your Spaces",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
         if (userSpaces.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Your Spaces",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
             item {
                 SpaceHorizontalList(
                     spaces = userSpaces.map { SpaceInfo(it, true) },
                     viewModel = viewModel,
                     navigateToSpaceDetail = navigateToSpaceDetail
+                )
+            }
+        }else{
+            item {
+                Text(
+                    text = "You haven't joined any spaces yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
         }

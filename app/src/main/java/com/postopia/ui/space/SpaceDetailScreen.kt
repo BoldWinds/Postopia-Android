@@ -60,9 +60,7 @@ fun SpaceDetailScreen(
     }
 
     LaunchedEffect(uiState.isLoading) {
-        uiState.isLoading.let { isLoading ->
-            sharedViewModel.setLoading(isLoading)
-        }
+        sharedViewModel.setLoading(uiState.isLoading)
     }
 
     Column(

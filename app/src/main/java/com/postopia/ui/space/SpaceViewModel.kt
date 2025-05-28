@@ -57,9 +57,7 @@ class SpaceViewModel @Inject constructor(
         viewModelScope.launch {
             spaceRepository.getPopularSpaces().collect { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _uiState.update { it.copy(isLoading = true) }
-                    }
+                    is Result.Loading -> {}
                     is Result.Success -> {
                         _uiState.update { it.copy(popularSpaces = result.data) }
                     }
@@ -70,9 +68,7 @@ class SpaceViewModel @Inject constructor(
             }
             spaceRepository.getUserSpaces().collect { result ->
                 when (result) {
-                    is Result.Loading -> {
-                        _uiState.update { it.copy(isLoading = true) }
-                    }
+                    is Result.Loading -> { }
                     is Result.Success -> {
                         _uiState.update { it.copy(userSpaces = result.data) }
                     }
@@ -90,7 +86,7 @@ class SpaceViewModel @Inject constructor(
             viewModelScope.launch {
                 spaceRepository.joinSpace(id).collect { result ->
                     when (result) {
-                        is Result.Loading -> {}
+                        is Result.Loading -> { }
                         is Result.Success -> {
                             _uiState.update { it.copy(isLoading = false) }
                         }
@@ -121,8 +117,7 @@ class SpaceViewModel @Inject constructor(
         viewModelScope.launch {
             spaceRepository.getSpace(spaceId).collect { result ->
                 when (result) {
-                    is Result.Loading -> {
-                    }
+                    is Result.Loading -> { }
                     is Result.Success -> {
                         _uiState.update { it.copy(spaceInfo = result.data, isLoading = false) }
                     }
