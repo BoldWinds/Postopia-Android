@@ -45,8 +45,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.postopia.data.model.FeedPostInfo
 import com.postopia.data.model.OpinionStatus
+import com.postopia.ui.model.PostCardInfo
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -73,14 +73,14 @@ fun LazyListState.OnBottomReached(
 // 单个帖子卡片组件
 @Composable
 fun PostCard(
-    postItem: FeedPostInfo,
-    onPostClick: (FeedPostInfo) -> Unit = {},
+    postItem: PostCardInfo,
+    onPostClick: (Long) -> Unit = {},
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clickable { onPostClick(postItem) },
+            .clickable { onPostClick(postItem.postID) },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
@@ -99,7 +99,7 @@ fun PostCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = postItem.post.subject,
+                    text = postItem.subject,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -120,7 +120,7 @@ fun PostCard(
                 // 用户头像
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(postItem.user.avatar)
+                        .data(postItem.userAvatar)
                         .crossfade(true)
                         .build(),
                     contentDescription = "avatar",
@@ -133,7 +133,7 @@ fun PostCard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = postItem.user.nickname,
+                    text = postItem.userNickname,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -143,7 +143,7 @@ fun PostCard(
 
             // 内容预览
             Text(
-                text = postItem.post.content,
+                text = postItem.content,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
@@ -170,14 +170,14 @@ fun PostCard(
                         Icon(
                             imageVector = Icons.Default.ThumbUp,
                             contentDescription = "点赞",
-                            tint = if (postItem.opinion.opinionStatus == OpinionStatus.POSITIVE)
+                            tint = if (postItem.opinionStatus == OpinionStatus.POSITIVE)
                                 MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = postItem.post.positiveCount.toString(),
+                            text = postItem.positiveCount.toString(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -189,14 +189,14 @@ fun PostCard(
                         Icon(
                             imageVector = Icons.Default.ThumbDown,
                             contentDescription = "点踩",
-                            tint = if (postItem.opinion.opinionStatus == OpinionStatus.NEGATIVE)
+                            tint = if (postItem.opinionStatus == OpinionStatus.NEGATIVE)
                                 MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = postItem.post.negativeCount.toString(),
+                            text = postItem.negativeCount,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -214,7 +214,7 @@ fun PostCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = postItem.post.commentCount.toString(),
+                            text = postItem.commentCount,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -227,7 +227,7 @@ fun PostCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = DateUtils.formatDate(postItem.post.createdAt),
+                        text = DateUtils.formatDate(postItem.createdAt),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -240,11 +240,11 @@ fun PostCard(
 // 主要的PostList组件
 @Composable
 fun PostList(
-    posts: List<FeedPostInfo>,
+    posts: List<PostCardInfo>,
     isLoadingMore: Boolean = false,
     hasMore : Boolean = true,
     onLoadMore: () -> Unit = {},
-    onPostClick: (FeedPostInfo) -> Unit = {},
+    onPostClick: (Long) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
 
@@ -265,7 +265,7 @@ fun PostList(
     ) {
         items(
             items = posts,
-            key = { it.post.id }
+            key = { it.postID }
         ) { postItem ->
             PostCard(
                 postItem = postItem,

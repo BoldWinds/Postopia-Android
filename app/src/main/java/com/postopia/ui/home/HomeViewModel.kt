@@ -3,6 +3,7 @@ package com.postopia.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
+import com.postopia.domain.mapper.PostMapper.toPostCardInfo
 import com.postopia.domain.repository.PostRepository
 import com.postopia.ui.model.PostCardInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,7 +62,7 @@ class HomeViewModel @Inject constructor(
                         val newSpaceInfos = result.data
                         _uiState.update {
                             it.copy(
-                                // TODO spaceInfos =  it.spaceInfos + newSpaceInfos,
+                                spaceInfos =  it.spaceInfos + newSpaceInfos.map{ it.toPostCardInfo() },
                                 isLoadingMore = false,
                                 page = page + 1,
                                 hasMore = newSpaceInfos.isNotEmpty()
