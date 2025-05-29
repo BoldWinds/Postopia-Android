@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -226,64 +227,80 @@ fun SpaceCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // 头像
-            AsyncImage(
-                model = space.avatar,
-                contentDescription = "${space.name} avatar",
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.ic_launcher_background), // TODO: 添加占位符图片
-                error = painterResource(id = R.drawable.ic_launcher_background) // TODO: 添加错误图片
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 头像
+                AsyncImage(
+                    model = space.avatar,
+                    contentDescription = "${space.name} avatar",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.ic_launcher_background), // TODO: 添加占位符图片
+                    error = painterResource(id = R.drawable.ic_launcher_background) // TODO: 添加错误图片
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // 空间信息
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = space.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Text(
+                        text = formatMemberCount(space.memberCount),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+
+                // 加入按钮
+                Button(
+                    onClick = joinOrLeave,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isMember)
+                            MaterialTheme.colorScheme.surfaceVariant
+                        else
+                            MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = if (isMember) "Joined" else "Join",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isMember)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 空间描述
+            Text(
+                text = space.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // 空间信息
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = space.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Text(
-                    text = formatMemberCount(space.memberCount),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
-            // 加入按钮
-            Button(
-                onClick = joinOrLeave,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isMember)
-                        MaterialTheme.colorScheme.surfaceVariant
-                    else
-                        MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier.height(36.dp)
-            ) {
-                Text(
-                    text = if (isMember) "Joined" else "Join",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (isMember)
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    else
-                        MaterialTheme.colorScheme.onPrimary
-                )
-            }
         }
     }
 }
