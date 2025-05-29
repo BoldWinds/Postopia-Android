@@ -4,13 +4,13 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class OpinionInfo (
-    val mergeID: Long,
+    val mergeId: Long,
     val opinionStatus: OpinionStatus,
-    val updatedAt: String
+    val updatedAt: String? = null
 )
 
 enum class OpinionStatus {
-    Negative,
-    Nil,
-    Positive
+    NEGATIVE,
+    NIL,
+    POSITIVE
 }

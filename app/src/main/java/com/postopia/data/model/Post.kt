@@ -36,7 +36,7 @@ data class PostInfo (
     val opinion: OpinionInfo,
     val post: PostPart,
     val user: UserInfo,
-    val vote: VoteInfo
+    val vote: VoteInfo? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -57,7 +57,7 @@ data class FeedPostInfo (
     val opinion: OpinionInfo,
     val post: FeedPostPart,
     val user: UserInfo,
-    val vote: VoteInfo
+    val vote: VoteInfo? = null
 )
 
 @JsonClass(generateAdapter = true)

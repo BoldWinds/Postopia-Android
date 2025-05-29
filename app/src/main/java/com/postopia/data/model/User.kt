@@ -8,7 +8,7 @@ data class UserInfo(
     val username: String,
     val nickname: String = "",
     val avatar: String = "",
-    val introduction: String,
+    val introduction: String? = null,
     val postCount : Long = 0 ,
     val commentCount: Long = 0,
     val credit : Long = 0,
@@ -34,5 +34,4 @@ data class UserDetail (
     val showEmail: Boolean,
     val username: String
 )
-
 
