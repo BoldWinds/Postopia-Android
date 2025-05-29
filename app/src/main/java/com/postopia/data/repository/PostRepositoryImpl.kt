@@ -14,10 +14,10 @@ class PostRepositoryImpl @Inject constructor(
     private val remoteDataSource: PostRemoteDataSource
 ) : PostRepository {
 
-    override suspend fun getUserPosts(page: Int): Flow<Result<List<UserPostInfo>>> = flow {
+    override suspend fun getUserPosts(page: Int, userId : String?): Flow<Result<List<UserPostInfo>>> = flow {
         emit(Result.Loading)
         try {
-            val response = remoteDataSource.getPostsByUser(page)
+            val response = remoteDataSource.getPostsByUser(page, userId = userId)
             if (response.isSuccessful()) {
                 emit(Result.Success(response.requireData().requireData()))
             } else {

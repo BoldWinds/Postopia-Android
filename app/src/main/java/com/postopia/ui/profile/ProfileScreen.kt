@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +41,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentList
+import com.postopia.ui.components.PostList
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -66,178 +66,179 @@ fun ProfileScreen(
     val selectedTab = uiState.selectedTab
     val tabs = listOf("Posts", "Comments", "About")
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        item {
-            // Header Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(20.dp)
+        // Header Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
+                // Avatar and Basic Info
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // Avatar and Basic Info
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(userDetail?.avatar)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "User Avatar",
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = userDetail?.nickname ?: "Unknown User",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "u/${userDetail?.username}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Text(
-                                text = DateUtils.formatTimestampFromString(userDetail?.createdAt ?: "0"),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                // Stats Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StatItem(
-                        value = userDetail?.postCount.toString(),
-                        label = "Posts"
-                    )
-                    // 垂直分割线
-                    Box(
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(userDetail?.avatar)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "User Avatar",
                         modifier = Modifier
-                            .height(24.dp)
-                            .width(1.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentScale = ContentScale.Crop
                     )
-                    StatItem(
-                        value = userDetail?.commentCount.toString(),
-                        label = "Comments"
-                    )
-                    // 垂直分割线
-                    Box(
-                        modifier = Modifier
-                            .height(24.dp)
-                            .width(1.dp)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                    )
-                    StatItem(
-                        value = userDetail?.credit.toString(),
-                        label = "Credit"
-                    )
-                }
-                // Email
-                if (userDetail?.email != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Email,
-                            contentDescription = "Email",
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
                         Text(
-                            text = userDetail.email.toString(),
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = userDetail?.nickname ?: "Unknown User",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Text(
+                            text = "u/${userDetail?.username}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = DateUtils.formatTimestampFromString(userDetail?.createdAt ?: "0"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
                     }
                 }
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        // Tab Section
-        item {
-            Column(
+            Spacer(modifier = Modifier.height(20.dp))
+            // Stats Row
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = MaterialTheme.colorScheme.primary,
-                            height = 3.dp
-                        )
-                    }
+                StatItem(
+                    value = userDetail?.postCount.toString(),
+                    label = "Posts"
+                )
+                // 垂直分割线
+                Box(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                )
+                StatItem(
+                    value = userDetail?.commentCount.toString(),
+                    label = "Comments"
+                )
+                // 垂直分割线
+                Box(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                )
+                StatItem(
+                    value = userDetail?.credit.toString(),
+                    label = "Credit"
+                )
+            }
+            // Email
+            if (userDetail?.email != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 ) {
-                    tabs.forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTab == index,
-                            onClick = {
-                                viewModel.handleEvent(ProfileEvent.ChangeTab(index)) },
-                            text = {
-                                Text(
-                                    text = title,
-                                    fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal,
-                                    color = if (selectedTab == index)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Email",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = userDetail.email.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
-        // Content based on selected tab
-        item {
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Tab Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+                .weight(1f) // 让Tab内容区域占用剩余空间
+        ) {
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = MaterialTheme.colorScheme.primary,
+                        height = 3.dp
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = {
+                            viewModel.handleEvent(ProfileEvent.ChangeTab(index)) },
+                        text = {
+                            Text(
+                                text = title,
+                                fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selectedTab == index)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    )
+                }
+            }
+
+            // Content based on selected tab
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 when (selectedTab) {
-                    0 -> {}//PostList()
+                    0 -> PostList(
+                        posts = uiState.userPosts,
+                        isLoadingMore = uiState.isLoadingPosts,
+                        hasMore = uiState.hasMorePosts,
+                        onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMorePosts) },
+                        onPostClick = {  /*TODO open post detail*/  }
+                    )
                     1 -> CommentList()
                     2 -> {
                         if (userDetail?.introduction.toString().isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(20.dp))
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(

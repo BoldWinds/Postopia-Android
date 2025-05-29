@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PostRepository{
 
-    suspend fun getUserPosts(page: Int): Flow<Result<List<UserPostInfo>>>
+    suspend fun getUserPosts(page: Int, userId : String? = null): Flow<Result<List<UserPostInfo>>>
 
     suspend fun getPopularPosts(page: Int, size: String? = null): Flow<Result<List<FeedPostInfo>>>
 
