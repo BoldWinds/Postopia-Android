@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.data.model.FeedPostInfo
+import com.postopia.data.model.OpinionStatus
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -81,7 +82,7 @@ fun PostCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clickable { onPostClick(postItem) },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -101,14 +102,14 @@ fun PostCard(
                     text = postItem.post.subject,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // 用户信息
             Row(
@@ -124,7 +125,7 @@ fun PostCard(
                         .build(),
                     contentDescription = "avatar",
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(24.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
@@ -138,18 +139,18 @@ fun PostCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // 内容预览
             Text(
                 text = postItem.post.content,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // 底部交互栏
             Row(
@@ -169,7 +170,9 @@ fun PostCard(
                         Icon(
                             imageVector = Icons.Default.ThumbUp,
                             contentDescription = "点赞",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (postItem.opinion.opinionStatus == OpinionStatus.POSITIVE)
+                                MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -185,8 +188,10 @@ fun PostCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.ThumbDown,
-                            contentDescription = "负面评价",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            contentDescription = "点踩",
+                            tint = if (postItem.opinion.opinionStatus == OpinionStatus.NEGATIVE)
+                                MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -237,13 +242,14 @@ fun PostCard(
 fun PostList(
     posts: List<FeedPostInfo>,
     isLoadingMore: Boolean = false,
+    hasMore : Boolean = true,
     onLoadMore: () -> Unit = {},
     onPostClick: (FeedPostInfo) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
 
     // 当滚动到接近底部时自动加载更多
-    if (!isLoadingMore) {
+    if (!isLoadingMore && hasMore) {
         listState.OnBottomReached {
             onLoadMore()
         }
@@ -299,12 +305,6 @@ fun PostList(
                         Text(
                             text = "暂无帖子",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "快来发布第一个帖子吧！",
-                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }

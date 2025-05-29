@@ -32,8 +32,9 @@ fun HomeScreen(
     PostList(
         posts = uiState.spaceInfos,
         isLoadingMore = uiState.isLoadingMore,
+        hasMore = uiState.hasMore,
         onLoadMore = {
-            viewModel.handleEvent(HomeEvent.LoadMorePosts(uiState.page))
+            viewModel.handleEvent(HomeEvent.LoadMorePosts)
         },
         onPostClick = { spaceInfo ->
             // todo open post detail
