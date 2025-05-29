@@ -2,7 +2,6 @@ package com.postopia.data.repository.impl
 
 import com.postopia.data.model.Result
 import com.postopia.data.model.SpaceInfo
-import com.postopia.data.model.SpacePart
 import com.postopia.data.remote.SpaceRemoteDataSource
 import com.postopia.data.remote.dto.JoinSpaceRequest
 import com.postopia.data.remote.dto.LeaveSpaceRequest
@@ -28,12 +27,15 @@ class SpaceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getUserSpaces(page : Int): Flow<Result<List<SpacePart>>> = flow {
+    override suspend fun getUserSpaces(page : Int): Flow<Result<List<SpaceInfo>>> = flow {
         emit(Result.Loading)
         try{
             val response = remoteDataSource.getUserSpace(page.toString())
             if(response.isSuccessful()){
-                emit(Result.Success(response.requireData().requireData()))
+                val spaceInfos = response.requireData().requireData().map { spacePart ->
+                    SpaceInfo(space = spacePart, isMember = true)
+                }
+                emit(Result.Success(spaceInfos))
             }else{
                 emit(Result.Error(Exception(response.message)))
             }

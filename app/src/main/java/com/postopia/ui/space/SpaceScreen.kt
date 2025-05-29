@@ -16,17 +16,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,8 +85,15 @@ fun SpaceScreen(
         item {
             SpaceHorizontalList(
                 spaces = popularSpaces,
-                viewModel = viewModel,
-                navigateToSpaceDetail = navigateToSpaceDetail
+                navigateToSpaceDetail = navigateToSpaceDetail,
+                onJoinOrLeave = { spaceId, join ->
+                    viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join, true))
+                },
+                onLoadMore = {
+                    viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(true))
+                },
+                isLoadingMore = uiState.isLoadingMorePopularSpaces,
+                hasMore = uiState.hasMorePopularSpaces,
             )
         }
 
@@ -98,12 +108,19 @@ fun SpaceScreen(
         if (userSpaces.isNotEmpty()) {
             item {
                 SpaceHorizontalList(
-                    spaces = userSpaces.map { SpaceInfo(it, true) },
-                    viewModel = viewModel,
-                    navigateToSpaceDetail = navigateToSpaceDetail
+                    spaces = userSpaces,
+                    navigateToSpaceDetail = navigateToSpaceDetail,
+                    onJoinOrLeave = { spaceId, join ->
+                        viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join, false))
+                    },
+                    onLoadMore = {
+                        viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(false))
+                    },
+                    isLoadingMore = uiState.isLoadingMoreUserSpaces,
+                    hasMore = uiState.hasMoreUserSpaces,
                 )
             }
-        }else{
+        } else {
             item {
                 Text(
                     text = "You haven't joined any spaces yet.",
@@ -123,13 +140,33 @@ fun SpaceScreen(
 @Composable
 fun SpaceHorizontalList(
     spaces: List<SpaceInfo>,
-    viewModel: SpaceViewModel,
-    navigateToSpaceDetail: (Long) -> Unit
+    navigateToSpaceDetail: (Long) -> Unit,
+    onJoinOrLeave: (spaceId: Long, join: Boolean) -> Unit = { _, _ -> },
+    onLoadMore: () -> Unit = {},
+    isLoadingMore: Boolean = false,
+    hasMore : Boolean,
 ) {
     // 将空间列表按两个一组分组
     val groupedSpaces = spaces.chunked(2)
 
+    // 使用LazyListState来监控滚动状态
+    val listState = rememberLazyListState()
+
+    // 监控滚动并在接近末尾时触发加载更多
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisibleIndex ->
+                if (lastVisibleIndex != null &&
+                    lastVisibleIndex >= (groupedSpaces.size - 1) &&
+                    !isLoadingMore &&
+                    hasMore) {
+                    onLoadMore()
+                }
+            }
+    }
+
     LazyRow(
+        state = listState,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(horizontal = 0.dp)
     ) {
@@ -146,8 +183,26 @@ fun SpaceHorizontalList(
                             navigateToSpaceDetail(spaceInfo.space.id)
                         },
                         joinOrLeave = {
-                            viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceInfo.space.id, spaceInfo.isMember))
+                            onJoinOrLeave(spaceInfo.space.id, spaceInfo.isMember)
                         }
+                    )
+                }
+            }
+        }
+
+        // 显示加载中指示器
+        if (isLoadingMore) {
+            item {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(150.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(36.dp),
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -241,3 +296,4 @@ fun formatMemberCount(count: Long): String {
     }
 }
 fun Double.format(digits: Int) = "%.${digits}f".format(this).trimEnd('0').trimEnd('.')
+
