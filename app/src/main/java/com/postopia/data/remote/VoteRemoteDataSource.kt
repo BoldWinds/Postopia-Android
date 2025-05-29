@@ -8,6 +8,6 @@ import retrofit2.http.Query
 interface VoteRemoteDataSource {
 
     @POST("/vote/space")
-    suspend fun getSpaceVote(@Query ("spaceId") spaceId: Int): ApiResponse<SpaceVoteInfo>
+    suspend fun getSpaceVote(@Query ("spaceId") spaceId: Int): ApiResponse<List<SpaceVoteInfo>>
 }
 

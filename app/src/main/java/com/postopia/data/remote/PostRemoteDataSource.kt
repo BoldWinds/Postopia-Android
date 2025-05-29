@@ -26,7 +26,7 @@ interface PostRemoteDataSource {
 
     @GET("/post/space")
     suspend fun getPostsBySpace(
-        @Query("spaceId") spaceId: Int,
+        @Query("spaceId") spaceId: Long,
         @Query("page") page: Int,
         @Query("size") size: String? = null,
         @Query("direction") direction: String? = null

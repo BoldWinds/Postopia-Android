@@ -6,8 +6,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.auth.AuthScreen
 import com.postopia.ui.home.HomeScreen
@@ -86,6 +88,9 @@ fun AppNavHost(
 
         composable(
             route = Screen.SpaceDetail.route,
+            arguments = listOf(
+                navArgument("spaceId") { type = NavType.LongType }
+            ),
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) { backStackEntry ->

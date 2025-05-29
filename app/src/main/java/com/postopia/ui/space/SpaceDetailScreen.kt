@@ -34,18 +34,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.postopia.data.model.SpacePart
 import com.postopia.ui.SharedViewModel
-import com.postopia.ui.components.ArrowBack
+import com.postopia.ui.components.PostList
 import com.postopia.utils.DateUtils
 
 @Composable
 fun SpaceDetailScreen(
-    viewModel: SpaceViewModel = hiltViewModel(),
+    viewModel: SpaceDetailViewModel = hiltViewModel(),
     sharedViewModel : SharedViewModel,
     spaceId: Long,
-    navigateBack: () -> Unit
 ) {
     LaunchedEffect(spaceId) {
-        viewModel.handleEvent(SpaceEvent.LoadSpaceDetail(spaceId))
+        viewModel.handleEvent(SpaceDetailEvent.LoadSpaceDetail(spaceId))
     }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -55,7 +54,7 @@ fun SpaceDetailScreen(
     LaunchedEffect(uiState.snackbarMessage) {
         uiState.snackbarMessage?.let { message ->
             sharedViewModel.showSnackbar(message)
-            viewModel.handleEvent(SpaceEvent.SnackbarMessageShown)
+            viewModel.handleEvent(SpaceDetailEvent.SnackbarMessageShown)
         }
     }
 
@@ -69,17 +68,25 @@ fun SpaceDetailScreen(
             .background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        ArrowBack { navigateBack() }
         SpaceDetailTopBar(
             spacePart = space,
             onJoinClick = {
-                viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join = isMember == true))
+                viewModel.handleEvent(SpaceDetailEvent.JoinOrLeave(spaceId, join = isMember == true))
             }
         )
         // 空间详情信息
         SpaceDetailInfo(spacePart = space)
-        // TODO 空间帖子列表
-        Text("TODO Space posts here")
+
+        // TODO 空间帖子 与投票 的 tab
+        PostList(
+            posts = uiState.spacePosts,
+            isLoadingMore = uiState.isLoadingMore,
+            hasMore = uiState.hasMore,
+            onLoadMore = {
+                viewModel.handleEvent(SpaceDetailEvent.LoadMorePosts)
+            },
+            onPostClick = {},
+        )
     }
 }
 
