@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
 import com.postopia.data.model.SpaceInfo
-import com.postopia.data.repository.SpaceRepository
+import com.postopia.domain.repository.SpaceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

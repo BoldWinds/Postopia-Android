@@ -2,9 +2,9 @@ package com.postopia.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.postopia.data.model.FeedPostInfo
 import com.postopia.data.model.Result
-import com.postopia.data.repository.PostRepository
+import com.postopia.domain.repository.PostRepository
+import com.postopia.ui.model.PostCardInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 data class HomeUiState(
     val isLoading: Boolean = false,
     val snackbarMessage: String? = null,
-    val spaceInfos : List<FeedPostInfo> = emptyList<FeedPostInfo>(),
+    val spaceInfos : List<PostCardInfo> = emptyList<PostCardInfo>(),
     val isLoadingMore : Boolean = false,
     val page : Int = 0,
     val hasMore : Boolean = true,
@@ -61,7 +61,7 @@ class HomeViewModel @Inject constructor(
                         val newSpaceInfos = result.data
                         _uiState.update {
                             it.copy(
-                                spaceInfos =  it.spaceInfos + newSpaceInfos,
+                                // TODO spaceInfos =  it.spaceInfos + newSpaceInfos,
                                 isLoadingMore = false,
                                 page = page + 1,
                                 hasMore = newSpaceInfos.isNotEmpty()

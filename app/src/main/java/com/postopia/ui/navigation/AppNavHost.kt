@@ -93,7 +93,6 @@ fun AppNavHost(
 
             SpaceDetailScreen(
                 spaceId = spaceId,
-                navigateBack = { navController.popBackStack() },
                 sharedViewModel = sharedViewModel
             )
         }

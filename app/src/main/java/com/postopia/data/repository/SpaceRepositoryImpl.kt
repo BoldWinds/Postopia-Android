@@ -1,11 +1,11 @@
-package com.postopia.data.repository.impl
+package com.postopia.data.repository
 
 import com.postopia.data.model.Result
 import com.postopia.data.model.SpaceInfo
 import com.postopia.data.remote.SpaceRemoteDataSource
 import com.postopia.data.remote.dto.JoinSpaceRequest
 import com.postopia.data.remote.dto.LeaveSpaceRequest
-import com.postopia.data.repository.SpaceRepository
+import com.postopia.domain.repository.SpaceRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

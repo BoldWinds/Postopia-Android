@@ -1,4 +1,4 @@
-package com.postopia.data.repository
+package com.postopia.domain.repository
 
 import com.postopia.data.model.Result
 import com.postopia.data.model.SpaceInfo

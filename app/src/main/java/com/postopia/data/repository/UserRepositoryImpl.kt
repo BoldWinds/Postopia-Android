@@ -1,10 +1,10 @@
-package com.postopia.data.repository.impl
+package com.postopia.data.repository
 
 import com.postopia.data.local.UserLocalDataSource
 import com.postopia.data.model.Result
 import com.postopia.data.model.UserDetail
 import com.postopia.data.remote.UserRemoteDataSource
-import com.postopia.data.repository.UserRepository
+import com.postopia.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

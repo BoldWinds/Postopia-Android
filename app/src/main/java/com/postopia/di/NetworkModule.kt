@@ -6,6 +6,7 @@ import com.postopia.data.remote.CommentRemoteDataSource
 import com.postopia.data.remote.PostRemoteDataSource
 import com.postopia.data.remote.SpaceRemoteDataSource
 import com.postopia.data.remote.UserRemoteDataSource
+import com.postopia.data.remote.VoteRemoteDataSource
 import com.postopia.data.remote.util.UnitJsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -87,6 +88,12 @@ object NetworkModule {
     @Singleton
     fun provideCommentRemoteDataSource(retrofit: Retrofit): CommentRemoteDataSource {
         return retrofit.create(CommentRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVoteRemoteDataSource(retrofit: Retrofit): VoteRemoteDataSource {
+        return retrofit.create(VoteRemoteDataSource::class.java)
     }
 }
 

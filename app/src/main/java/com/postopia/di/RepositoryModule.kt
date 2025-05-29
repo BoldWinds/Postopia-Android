@@ -1,13 +1,15 @@
 package com.postopia.di
 
-import com.postopia.data.repository.AuthRepository
-import com.postopia.data.repository.PostRepository
-import com.postopia.data.repository.SpaceRepository
-import com.postopia.data.repository.UserRepository
-import com.postopia.data.repository.impl.AuthRepositoryImpl
-import com.postopia.data.repository.impl.PostRepositoryImpl
-import com.postopia.data.repository.impl.SpaceRepositoryImpl
-import com.postopia.data.repository.impl.UserRepositoryImpl
+import com.postopia.domain.repository.AuthRepository
+import com.postopia.domain.repository.PostRepository
+import com.postopia.domain.repository.SpaceRepository
+import com.postopia.domain.repository.UserRepository
+import com.postopia.domain.repository.VoteRepository
+import com.postopia.data.repository.AuthRepositoryImpl
+import com.postopia.data.repository.PostRepositoryImpl
+import com.postopia.data.repository.SpaceRepositoryImpl
+import com.postopia.data.repository.UserRepositoryImpl
+import com.postopia.data.repository.VoteRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -36,4 +38,9 @@ abstract class RepositoryModule {
     abstract fun bindPostRepository(
         postRepositoryImpl: PostRepositoryImpl
     ): PostRepository
+
+    @Binds
+    abstract fun bindVoteRepository (
+        voteRepositoryImpl: VoteRepositoryImpl
+    ) : VoteRepository
 }

@@ -1,4 +1,4 @@
-package com.postopia.data.repository.impl
+package com.postopia.data.repository
 
 import com.postopia.data.local.AuthLocalDataSource
 import com.postopia.data.model.Credential
@@ -7,7 +7,7 @@ import com.postopia.data.remote.AuthRemoteDataSource
 import com.postopia.data.remote.dto.LoginRequest
 import com.postopia.data.remote.dto.RefreshTokenRequest
 import com.postopia.data.remote.dto.RegisterRequest
-import com.postopia.data.repository.AuthRepository
+import com.postopia.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

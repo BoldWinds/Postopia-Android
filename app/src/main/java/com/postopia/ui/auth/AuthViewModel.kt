@@ -3,7 +3,7 @@ package com.postopia.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
-import com.postopia.data.repository.AuthRepository
+import com.postopia.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

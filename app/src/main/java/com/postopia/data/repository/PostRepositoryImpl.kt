@@ -1,10 +1,10 @@
-package com.postopia.data.repository.impl
+package com.postopia.data.repository
 
 import com.postopia.data.model.FeedPostInfo
 import com.postopia.data.model.Result
 import com.postopia.data.model.UserPostInfo
 import com.postopia.data.remote.PostRemoteDataSource
-import com.postopia.data.repository.PostRepository
+import com.postopia.domain.repository.PostRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
