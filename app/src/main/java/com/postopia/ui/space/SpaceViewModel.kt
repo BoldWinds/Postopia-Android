@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
 import com.postopia.data.model.SpaceInfo
-import com.postopia.data.model.SpacePart
 import com.postopia.data.repository.SpaceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,14 +16,19 @@ data class SpaceUiState(
     val isLoading : Boolean = true,
     val snackbarMessage: String? = null,
     val popularSpaces : List<SpaceInfo> = emptyList(),
-    val userSpaces : List<SpacePart> = emptyList(),
-    val spaceInfo : SpaceInfo? = null,
+    val userSpaces : List<SpaceInfo> = emptyList(),
+    val popularSpacesPage : Int = 0,
+    val userSpacesPage : Int = 0,
+    val hasMorePopularSpaces : Boolean = true,
+    val hasMoreUserSpaces : Boolean = true,
+    val isLoadingMorePopularSpaces : Boolean = false,
+    val isLoadingMoreUserSpaces : Boolean = false
 )
 
 sealed class SpaceEvent {
     object SnackbarMessageShown : SpaceEvent()
-    data class JoinOrLeave(val spaceId: Long, val join : Boolean) : SpaceEvent()
-    data class LoadSpaceDetail(val spaceId: Long) : SpaceEvent()
+    data class JoinOrLeave(val spaceId: Long, val join : Boolean, val isPopularSpaces: Boolean) : SpaceEvent()
+    data class LoadMoreSpaces(val isPopularSpaces: Boolean) : SpaceEvent()
 }
 
 @HiltViewModel
@@ -44,85 +48,149 @@ class SpaceViewModel @Inject constructor(
                 _uiState.update { it.copy(snackbarMessage = null) }
             }
             is SpaceEvent.JoinOrLeave -> {
-                joinOrLeave(event.spaceId, event.join)
+                joinOrLeave(event.spaceId, event.join, event.isPopularSpaces)
             }
-            is SpaceEvent.LoadSpaceDetail -> {
-                if(_uiState.value.spaceInfo != null && _uiState.value.spaceInfo!!.space.id == event.spaceId) return
-                loadSpaceDetail(event.spaceId)
+            is SpaceEvent.LoadMoreSpaces -> {
+                loadMoreSpaces(event.isPopularSpaces)
             }
         }
     }
 
     fun loadSpaces() {
         viewModelScope.launch {
-            spaceRepository.getPopularSpaces().collect { result ->
-                when (result) {
-                    is Result.Loading -> {}
-                    is Result.Success -> {
-                        _uiState.update { it.copy(popularSpaces = result.data) }
-                    }
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.exception.message) }
-                    }
-                }
-            }
-            spaceRepository.getUserSpaces().collect { result ->
-                when (result) {
-                    is Result.Loading -> { }
-                    is Result.Success -> {
-                        _uiState.update { it.copy(userSpaces = result.data) }
-                    }
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.exception.message) }
-                    }
-                }
-            }
-        }
-        _uiState.update { it.copy(isLoading = false) }
-    }
+            _uiState.update { it.copy(isLoading = true) }
 
-    fun joinOrLeave(id : Long, join : Boolean) {
-        if(join){
-            viewModelScope.launch {
-                spaceRepository.joinSpace(id).collect { result ->
-                    when (result) {
-                        is Result.Loading -> { }
-                        is Result.Success -> {
-                            _uiState.update { it.copy(isLoading = false) }
-                        }
-                        is Result.Error -> {
-                            _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
-                        }
-                    }
-                }
-            }
-        }else{
-            viewModelScope.launch {
-                spaceRepository.leaveSpace(id).collect { result ->
+            val popularSpacesJob = launch {
+                spaceRepository.getPopularSpaces().collect { result ->
                     when (result) {
                         is Result.Loading -> {}
                         is Result.Success -> {
-                            _uiState.update { it.copy(isLoading = false) }
+                            _uiState.update { it.copy(popularSpaces = result.data) }
                         }
                         is Result.Error -> {
-                            _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                            _uiState.update { it.copy(snackbarMessage = result.exception.message) }
                         }
+                    }
+                }
+            }
+
+            val userSpacesJob = launch {
+                spaceRepository.getUserSpaces().collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Success -> {
+                            _uiState.update { it.copy(userSpaces = result.data) }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                        }
+                    }
+                }
+            }
+
+            // 等待所有请求完成
+            popularSpacesJob.join()
+            userSpacesJob.join()
+            _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    fun joinOrLeave(id: Long, join: Boolean, isPopularSpaces: Boolean) {
+        viewModelScope.launch {
+            val repository = if (join) {
+                spaceRepository.leaveSpace(id)
+            } else {
+                spaceRepository.joinSpace(id)
+            }
+
+            repository.collect { result ->
+                when (result) {
+                    is Result.Loading -> { }
+                    is Result.Success -> {
+                        _uiState.update { currentState ->
+                            // 根据isPopularSpaces参数决定更新哪个列表
+                            if (isPopularSpaces) {
+                                // 只更新popularSpaces列表
+                                val updatedPopularSpaces = currentState.popularSpaces.map { space ->
+                                    if (space.space.id == id) space.copy(isMember = !join) else space
+                                }
+                                currentState.copy(popularSpaces = updatedPopularSpaces)
+                            } else {
+                                // 只更新userSpaces列表
+                                val updatedUserSpaces = currentState.userSpaces.map { space ->
+                                    if (space.space.id == id) space.copy(isMember = !join) else space
+                                }
+                                currentState.copy(userSpaces = updatedUserSpaces)
+                            }
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(snackbarMessage = result.message) }
                     }
                 }
             }
         }
     }
 
-    fun loadSpaceDetail(spaceId: Long) {
+    fun loadMoreSpaces(isPopularSpaces: Boolean) {
+        val currentState = _uiState.value
+
+        // 检查是否有更多数据可加载以及当前是否正在加载
+        if (isPopularSpaces) {
+            if (!currentState.hasMorePopularSpaces || currentState.isLoadingMorePopularSpaces) {
+                return
+            }
+            _uiState.update { it.copy(isLoadingMorePopularSpaces = true) }
+        } else {
+            if (!currentState.hasMoreUserSpaces || currentState.isLoadingMoreUserSpaces) {
+                return
+            }
+            _uiState.update { it.copy(isLoadingMoreUserSpaces = true) }
+        }
+
         viewModelScope.launch {
-            spaceRepository.getSpace(spaceId).collect { result ->
-                when (result) {
-                    is Result.Loading -> { }
-                    is Result.Success -> {
-                        _uiState.update { it.copy(spaceInfo = result.data, isLoading = false) }
+            if (isPopularSpaces) {
+                val nextPage = currentState.popularSpacesPage + 1
+                spaceRepository.getPopularSpaces(nextPage).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Success -> {
+                            val newSpaces = result.data
+                            _uiState.update { it.copy(
+                                popularSpaces = it.popularSpaces + newSpaces,
+                                popularSpacesPage = nextPage,
+                                hasMorePopularSpaces = newSpaces.isNotEmpty(),
+                                isLoadingMorePopularSpaces = false
+                            )}
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(
+                                snackbarMessage = result.exception.message,
+                                isLoadingMorePopularSpaces = false
+                            )}
+                        }
                     }
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                }
+            } else {
+                val nextPage = currentState.userSpacesPage + 1
+                spaceRepository.getUserSpaces(nextPage).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {}
+                        is Result.Success -> {
+                            val newSpaces = result.data
+                            _uiState.update { it.copy(
+                                userSpaces = it.userSpaces + newSpaces,
+                                userSpacesPage = nextPage,
+                                hasMoreUserSpaces = newSpaces.isNotEmpty(),
+                                isLoadingMoreUserSpaces = false
+                            )}
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(
+                                snackbarMessage = result.exception.message,
+                                isLoadingMoreUserSpaces = false
+                            )}
+                        }
                     }
                 }
             }
