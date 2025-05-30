@@ -3,6 +3,7 @@ package com.postopia.di
 import com.postopia.data.remote.AuthInterceptor
 import com.postopia.data.remote.AuthRemoteDataSource
 import com.postopia.data.remote.CommentRemoteDataSource
+import com.postopia.data.remote.OpinionRemoteDataSource
 import com.postopia.data.remote.PostRemoteDataSource
 import com.postopia.data.remote.SpaceRemoteDataSource
 import com.postopia.data.remote.UserRemoteDataSource
@@ -94,6 +95,12 @@ object NetworkModule {
     @Singleton
     fun provideVoteRemoteDataSource(retrofit: Retrofit): VoteRemoteDataSource {
         return retrofit.create(VoteRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOpinionRemoteDataSource(retrofit: Retrofit): OpinionRemoteDataSource {
+        return retrofit.create(OpinionRemoteDataSource::class.java)
     }
 }
 
