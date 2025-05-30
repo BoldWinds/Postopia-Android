@@ -9,3 +9,9 @@ data class PostOpinionRequest(
     val userId: Long,
     val isPositive: Boolean,
 )
+
+@JsonClass(generateAdapter = true)
+data class CancelPostOpinionRequest(
+    val id: Long,
+    val isPositive: Boolean,
+)

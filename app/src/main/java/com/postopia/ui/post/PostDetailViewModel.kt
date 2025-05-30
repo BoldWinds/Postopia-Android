@@ -23,8 +23,8 @@ data class PostDetailUiState(
 sealed class PostDetailEvent {
     object SnackbarMessageShown : PostDetailEvent()
     data class LoadPostDetail(val postId: Long, val spaceId: Long, val spaceNam: String) : PostDetailEvent()
-    object LikePost : PostDetailEvent()
-    object DislikePost : PostDetailEvent()
+    data class UpdatePostOpinion(val postId: Long, val spaceId: Long, val isPositive : Boolean) : PostDetailEvent()
+    data class CancelPostOpinion(val postId: Long,val isPositive : Boolean) : PostDetailEvent()
 }
 
 @HiltViewModel
@@ -44,11 +44,11 @@ class PostDetailViewModel @Inject constructor(
             is PostDetailEvent.LoadPostDetail -> {
                 loadPostDetail(event.postId, event.spaceId, event.spaceNam)
             }
-            is PostDetailEvent.LikePost -> {
-                sendOpinion(_uiState.value.postDetail.postID, _uiState.value.postDetail.spaceID, true)
+            is PostDetailEvent.UpdatePostOpinion -> {
+                sendOpinion(event.postId, event.spaceId, event.isPositive)
             }
-            is PostDetailEvent.DislikePost -> {
-                sendOpinion(_uiState.value.postDetail.postID, _uiState.value.postDetail.spaceID, false)
+            is PostDetailEvent.CancelPostOpinion -> {
+                cancelOpinion(event.postId, event.isPositive)
             }
         }
     }
@@ -72,13 +72,7 @@ class PostDetailViewModel @Inject constructor(
 
     fun sendOpinion(postId: Long, spaceId: Long, isPositive: Boolean) {
         viewModelScope.launch {
-            val result = if (isPositive) {
-                opinionRepository.postPositiveOpinion(postId, spaceId)
-            } else {
-                opinionRepository.postNegativeOpinion(postId, spaceId)
-            }
-
-            result.collect { result ->
+            opinionRepository.updateOpinionStatus(postId, spaceId, isPositive).collect { result ->
                 when (result) {
                     is Result.Loading -> { }
                     is Result.Success -> {
@@ -93,6 +87,36 @@ class PostDetailViewModel @Inject constructor(
                                 currentPostDetail.copy(
                                     negativeCount = currentPostDetail.negativeCount + 1,
                                     opinionStatus = com.postopia.data.model.OpinionStatus.NEGATIVE
+                                )
+                            }
+                            currentState.copy(postDetail = updatedPostDetail)
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy( snackbarMessage = result.exception.message ) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun cancelOpinion(postId: Long, isPositive: Boolean) {
+        viewModelScope.launch {
+            opinionRepository.cancelPostOpinion(postId, isPositive).collect { result ->
+                when (result) {
+                    is Result.Loading -> { }
+                    is Result.Success -> {
+                        _uiState.update { currentState ->
+                            val currentPostDetail = currentState.postDetail
+                            val updatedPostDetail = if (isPositive) {
+                                currentPostDetail.copy(
+                                    positiveCount = currentPostDetail.positiveCount - 1,
+                                    opinionStatus = com.postopia.data.model.OpinionStatus.NIL
+                                )
+                            } else {
+                                currentPostDetail.copy(
+                                    negativeCount = currentPostDetail.negativeCount - 1,
+                                    opinionStatus = com.postopia.data.model.OpinionStatus.NIL
                                 )
                             }
                             currentState.copy(postDetail = updatedPostDetail)

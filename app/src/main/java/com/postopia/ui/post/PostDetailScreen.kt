@@ -17,12 +17,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,8 +37,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.postopia.data.model.OpinionStatus
 import com.postopia.ui.SharedViewModel
+import com.postopia.ui.components.LikeDislikeBar
 import com.postopia.ui.model.PostDetailUiModel
 
 @Composable
@@ -79,8 +76,8 @@ fun PostDetailScreen(
         item {
             PostContent(
                 uiInfo = postUiData,
-                likePost = { viewModel.handleEvent(PostDetailEvent.LikePost) },
-                dislikePost = { viewModel.handleEvent(PostDetailEvent.DislikePost) },
+                updateOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.UpdatePostOpinion(postId, spaceId, isPositive)) },
+                cancelOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.CancelPostOpinion(postId, isPositive)) },
             )
         }
 
@@ -95,8 +92,8 @@ fun PostDetailScreen(
 @Composable
 fun PostContent(
     uiInfo: PostDetailUiModel,
-    likePost: () -> Unit,
-    dislikePost: () -> Unit,
+    updateOpinion: (Boolean) -> Unit,
+    cancelOpinion: (Boolean) -> Unit,
 ){
     Card(
         modifier = Modifier
@@ -169,7 +166,14 @@ fun PostContent(
                 lineHeight = 20.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = uiInfo.createdAt,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 20.sp
+            )
+
+            //Spacer(modifier = Modifier.height(16.dp))
 
             // 操作按钮行
             Row(
@@ -178,50 +182,18 @@ fun PostContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 投票按钮
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = likePost ,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "赞成",
-                            tint = if (uiInfo.opinionStatus == OpinionStatus.POSITIVE)
-                                MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                LikeDislikeBar(
+                    opinion = uiInfo.opinionStatus,
+                    positiveCount = uiInfo.positiveCount,
+                    negativeCount = uiInfo.negativeCount,
+                    size = 20.dp,
+                    updateOpinion = { isPositive ->
+                        updateOpinion(isPositive)
+                    },
+                    cancelOpinion = { isPositive ->
+                        cancelOpinion(isPositive)
                     }
-                    Text(
-                        text = (uiInfo.positiveCount - uiInfo.negativeCount).toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
-                        color = when (uiInfo.opinionStatus) {
-                            OpinionStatus.POSITIVE -> MaterialTheme.colorScheme.primary
-                            OpinionStatus.NEGATIVE -> MaterialTheme.colorScheme.error
-                            else -> MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                    IconButton(
-                        onClick = dislikePost,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "反对",
-                            tint = if (uiInfo.opinionStatus == OpinionStatus.NEGATIVE)
-                                MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Text(
-                        text = uiInfo.createdAt,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                )
                 // 评论按钮
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

@@ -3,6 +3,7 @@ package com.postopia.data.repository
 import com.postopia.data.local.AuthLocalDataSource
 import com.postopia.data.model.Result
 import com.postopia.data.remote.OpinionRemoteDataSource
+import com.postopia.data.remote.dto.CancelPostOpinionRequest
 import com.postopia.data.remote.dto.PostOpinionRequest
 import com.postopia.domain.repository.OpinionRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,14 +16,15 @@ class OpinionRepositoryImpl @Inject constructor(
     private val opinionRemoteDataSource: OpinionRemoteDataSource,
 ) : OpinionRepository {
 
-    override suspend fun postPositiveOpinion(
+    override suspend fun updateOpinionStatus(
         postId: Long,
-        spaceId: Long
+        spaceId: Long,
+        isPositive: Boolean
     ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try{
             val userId = authLocalDataSource.getUserId().firstOrNull() ?: throw Exception("User not logged in")
-            val request = PostOpinionRequest(postId = postId, spaceId = spaceId, userId = userId,isPositive = true)
+            val request = PostOpinionRequest(postId = postId, spaceId = spaceId, userId = userId, isPositive = isPositive)
             val response = opinionRemoteDataSource.postOpinion(request)
             if(response.isSuccessful()){
                 emit(Result.Success(Unit))
@@ -34,15 +36,14 @@ class OpinionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun postNegativeOpinion(
+    override suspend fun cancelPostOpinion(
         postId: Long,
-        spaceId: Long
+        isPositive: Boolean
     ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try{
-            val userId = authLocalDataSource.getUserId().firstOrNull() ?: throw Exception("User not logged in")
-            val request = PostOpinionRequest(postId = postId, spaceId = spaceId, userId = userId,isPositive = false)
-            val response = opinionRemoteDataSource.postOpinion(request)
+            val request = CancelPostOpinionRequest(id = postId, isPositive = isPositive)
+            val response = opinionRemoteDataSource.cancelPostOpinion(request)
             if(response.isSuccessful()){
                 emit(Result.Success(Unit))
             }else{
