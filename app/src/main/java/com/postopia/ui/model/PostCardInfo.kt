@@ -4,6 +4,8 @@ import com.postopia.data.model.OpinionStatus
 
 data class PostCardInfo(
     val postID : Long,
+    val spaceID : Long,
+    val spaceName: String,
     val subject: String,
     val content: String,
     val userAvatar: String,

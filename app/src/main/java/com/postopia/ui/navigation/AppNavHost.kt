@@ -14,6 +14,7 @@ import com.postopia.ui.SharedViewModel
 import com.postopia.ui.auth.AuthScreen
 import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
+import com.postopia.ui.post.PostDetailScreen
 import com.postopia.ui.post.PostScreen
 import com.postopia.ui.profile.ProfileScreen
 import com.postopia.ui.space.SpaceDetailScreen
@@ -35,7 +36,12 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                HomeScreen(sharedViewModel = sharedViewModel)
+                HomeScreen(
+                    sharedViewModel = sharedViewModel,
+                    navigateToPostDetail = { postId, spaceId, spaceName ->
+                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                    },
+                )
         }
         composable(
             Screen.Space.route,
@@ -68,7 +74,12 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                ProfileScreen(sharedViewModel = sharedViewModel)
+                ProfileScreen(
+                    sharedViewModel = sharedViewModel,
+                    navigateToPostDetail = { postId, spaceId, spaceName ->
+                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                    },
+                )
         }
         composable(
             Screen.Auth.route,
@@ -98,6 +109,31 @@ fun AppNavHost(
 
             SpaceDetailScreen(
                 spaceId = spaceId,
+                sharedViewModel = sharedViewModel,
+                navigateToPostDetail = { postId, spaceId, spaceName ->
+                    navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                },
+            )
+        }
+
+        composable(
+            route = Screen.PostDetail.route,
+            arguments = listOf(
+                navArgument("postId") { type = NavType.LongType },
+                navArgument("spaceId") { type = NavType.LongType },
+                navArgument("spaceName") { type = NavType.StringType }
+            ),
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) { backStackEntry ->
+            val postId = backStackEntry.arguments?.getLong("postId") ?: -1L
+            val spaceId = backStackEntry.arguments?.getLong("spaceId") ?: -1L
+            val spaceName = backStackEntry.arguments?.getString("spaceName") ?: ""
+
+            PostDetailScreen(
+                postId = postId,
+                spaceId = spaceId,
+                spaceName = spaceName,
                 sharedViewModel = sharedViewModel
             )
         }

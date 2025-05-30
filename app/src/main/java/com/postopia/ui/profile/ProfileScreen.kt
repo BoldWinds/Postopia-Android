@@ -48,6 +48,7 @@ import com.postopia.utils.DateUtils
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
+    navigateToPostDetail : (Long, Long, String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -234,7 +235,9 @@ fun ProfileScreen(
                         isLoadingMore = uiState.isLoadingPosts,
                         hasMore = uiState.hasMorePosts,
                         onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMorePosts) },
-                        onPostClick = {  /*TODO open post detail*/  }
+                        onPostClick = { postID, spaceID, spaceName ->
+                            navigateToPostDetail(postID, spaceID, spaceName)
+                        }
                     )
                     1 -> CommentList()
                     2 -> {

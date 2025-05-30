@@ -10,4 +10,8 @@ sealed class Screen(val route: String) {
     object SpaceDetail : Screen("space_detail/{spaceId}") {
         fun createRoute(spaceId: Long) = "space_detail/$spaceId"
     }
+    object PostDetail : Screen("post_detail/{postId}/{spaceId}/{spaceName}") {
+        fun createRoute(postId: Long, spaceId: Long, spaceName: String) =
+            "post_detail/$postId/$spaceId/$spaceName"
+    }
 }

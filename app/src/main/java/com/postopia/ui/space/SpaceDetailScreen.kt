@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.postopia.data.model.SpacePart
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.PostList
+import com.postopia.ui.model.SpaceDetailUiModel
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -42,14 +42,14 @@ fun SpaceDetailScreen(
     viewModel: SpaceDetailViewModel = hiltViewModel(),
     sharedViewModel : SharedViewModel,
     spaceId: Long,
+    navigateToPostDetail : (Long, Long, String) -> Unit
 ) {
     LaunchedEffect(spaceId) {
         viewModel.handleEvent(SpaceDetailEvent.LoadSpaceDetail(spaceId))
     }
 
     val uiState by viewModel.uiState.collectAsState()
-    val isMember = uiState.spaceInfo?.isMember
-    val space = uiState.spaceInfo?.space
+    val spaceUiInfo = uiState.spaceInfo
 
     LaunchedEffect(uiState.snackbarMessage) {
         uiState.snackbarMessage?.let { message ->
@@ -69,13 +69,13 @@ fun SpaceDetailScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SpaceDetailTopBar(
-            spacePart = space,
+            uiInfo = spaceUiInfo,
             onJoinClick = {
-                viewModel.handleEvent(SpaceDetailEvent.JoinOrLeave(spaceId, join = isMember == true))
+                viewModel.handleEvent(SpaceDetailEvent.JoinOrLeave(spaceId, join = spaceUiInfo.isMember == true))
             }
         )
         // 空间详情信息
-        SpaceDetailInfo(spacePart = space)
+        SpaceDetailInfo(uiInfo = spaceUiInfo)
 
         // TODO 空间帖子 与投票 的 tab
         PostList(
@@ -85,7 +85,9 @@ fun SpaceDetailScreen(
             onLoadMore = {
                 viewModel.handleEvent(SpaceDetailEvent.LoadMorePosts)
             },
-            onPostClick = {},
+            onPostClick = { postId, spaceId, spaceName ->
+                navigateToPostDetail(postId, spaceId, spaceName)
+            },
         )
     }
 }
@@ -93,7 +95,7 @@ fun SpaceDetailScreen(
 
 @Composable
 fun SpaceDetailTopBar(
-    spacePart: SpacePart?,
+    uiInfo: SpaceDetailUiModel,
     onJoinClick: () -> Unit
 ) {
     Surface(
@@ -110,10 +112,9 @@ fun SpaceDetailTopBar(
                     .padding(horizontal = 8.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (spacePart != null) {
                     // 空间头像
                     AsyncImage(
-                        model = spacePart.avatar,
+                        model = uiInfo.avatar,
                         contentDescription = "Space Avatar",
                         modifier = Modifier
                             .size(32.dp)
@@ -129,7 +130,7 @@ fun SpaceDetailTopBar(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = spacePart.name,
+                            text = uiInfo.name,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -138,7 +139,7 @@ fun SpaceDetailTopBar(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = formatMemberCount(spacePart.memberCount),
+                                text = formatMemberCount(uiInfo.memberCount),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -155,75 +156,72 @@ fun SpaceDetailTopBar(
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
-                }
+
             }
 
-            spacePart?.description?.let { description ->
-                if (description.isNotEmpty()) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 20.sp,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
+
+            if (uiInfo.description.isNotEmpty()) {
+                Text(
+                    text = uiInfo.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
             }
+
         }
     }
 }
 
 @Composable
-fun SpaceDetailInfo(spacePart: SpacePart?) {
-    if (spacePart != null) {
-        Card(
+fun SpaceDetailInfo(uiInfo: SpaceDetailUiModel) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        // 统计信息
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 2.dp
-            )
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // 统计信息
-            Row(
+            StatisticItem(
+                label = "Members",
+                value = uiInfo.memberCount.toString(),
+                modifier = Modifier.weight(1f)
+            )
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                StatisticItem(
-                    label = "Members",
-                    value = spacePart.memberCount.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-                Box(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outline)
-                )
-                StatisticItem(
-                    label = "Posts",
-                    value = spacePart.postCount.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-                Box(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outline)
-                )
-                StatisticItem(
-                    label = "Created",
-                    value = DateUtils.formatDate(spacePart.createdAt),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
+                    .height(40.dp)
+                    .width(1.dp)
+                    .background(MaterialTheme.colorScheme.outline)
+            )
+            StatisticItem(
+                label = "Posts",
+                value = uiInfo.postCount.toString(),
+                modifier = Modifier.weight(1f)
+            )
+            Box(
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(1.dp)
+                    .background(MaterialTheme.colorScheme.outline)
+            )
+            StatisticItem(
+                label = "Created",
+                value = DateUtils.formatDate(uiInfo.createdAt),
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

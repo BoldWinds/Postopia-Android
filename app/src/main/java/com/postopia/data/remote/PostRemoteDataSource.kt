@@ -22,7 +22,7 @@ interface PostRemoteDataSource {
     suspend fun updatePost(@Body body: UpdatePostRequest): ApiResponse<Unit>
 
     @GET("/post/info")
-    suspend fun getPostInfo(@Query("id") id: Int): ApiResponse<PostInfo>
+    suspend fun getPostInfo(@Query("postId") id: Int): ApiResponse<PostInfo>
 
     @GET("/post/space")
     suspend fun getPostsBySpace(

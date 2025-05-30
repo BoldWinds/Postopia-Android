@@ -3,13 +3,14 @@ package com.postopia.ui.space
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
-import com.postopia.data.model.SpaceInfo
 import com.postopia.data.model.SpaceVoteInfo
 import com.postopia.domain.mapper.PostMapper.toPostCardInfo
+import com.postopia.domain.mapper.SpaceMapper.toUiModel
 import com.postopia.domain.repository.PostRepository
 import com.postopia.domain.repository.SpaceRepository
 import com.postopia.domain.repository.VoteRepository
 import com.postopia.ui.model.PostCardInfo
+import com.postopia.ui.model.SpaceDetailUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,7 @@ import javax.inject.Inject
 data class SpaceDetailUiState(
     val isLoading : Boolean = true,
     val snackbarMessage: String? = null,
-    val spaceInfo : SpaceInfo? = null,
+    val spaceInfo : SpaceDetailUiModel = SpaceDetailUiModel.default(),
     val spacePosts : List<PostCardInfo> = emptyList<PostCardInfo>(),
     val isLoadingMore : Boolean = false,
     val hasMore : Boolean = true,
@@ -70,7 +71,7 @@ class SpaceDetailViewModel @Inject constructor(
                     when (result) {
                         is Result.Loading -> { }
                         is Result.Success -> {
-                            _uiState.update { it.copy(spaceInfo = result.data) }
+                            _uiState.update { it.copy(spaceInfo = result.data.toUiModel()) }
                         }
                         is Result.Error -> {
                             _uiState.update { it.copy(snackbarMessage = result.message) }
@@ -79,6 +80,9 @@ class SpaceDetailViewModel @Inject constructor(
                 }
             }
 
+            // 先获取空间信息，以便后续使用空间名称
+            spaceInfoJob.join()
+
             val spacePostsJob = launch {
                 postRepository.getSpacePosts(spaceId = spaceId, page = 0).collect { result ->
                     when (result) {
@@ -86,7 +90,7 @@ class SpaceDetailViewModel @Inject constructor(
                         is Result.Success -> {
                             _uiState.update { currentState ->
                                 currentState.copy(
-                                    spacePosts = result.data.map { it.toPostCardInfo() },
+                                    spacePosts = result.data.map { it.toPostCardInfo(spaceId, currentState.spaceInfo.name) },
                                     page = 0,
                                     hasMore = result.data.isNotEmpty()
                                 )
@@ -117,7 +121,6 @@ class SpaceDetailViewModel @Inject constructor(
                 }
             }
 
-            spaceInfoJob.join()
             spacePostsJob.join()
             spaceVotesJob.join()
             _uiState.update{ it.copy(isLoading = false) }
@@ -129,7 +132,7 @@ class SpaceDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingMore = true) }
 
             postRepository.getSpacePosts(
-                spaceId = _uiState.value.spaceInfo?.space?.id ?: 0L,
+                spaceId = _uiState.value.spaceInfo.spaceID,
                 page = _uiState.value.page + 1
             ).collect { result ->
                 when (result) {
@@ -137,7 +140,7 @@ class SpaceDetailViewModel @Inject constructor(
                     is Result.Success -> {
                         _uiState.update { currentState ->
                             currentState.copy(
-                                spacePosts = currentState.spacePosts + result.data.map { it.toPostCardInfo() },
+                                spacePosts = currentState.spacePosts + result.data.map { it.toPostCardInfo(currentState.spaceInfo.spaceID, currentState.spaceInfo.name) },
                                 isLoadingMore = false,
                                 hasMore = result.data.isNotEmpty(),
                                 page = currentState.page + 1
@@ -165,7 +168,7 @@ class SpaceDetailViewModel @Inject constructor(
                     is Result.Loading -> { }
                     is Result.Success -> {
                         _uiState.update { currentState ->
-                            val updatedSpaceInfo = currentState.spaceInfo?.copy(
+                            val updatedSpaceInfo = currentState.spaceInfo.copy(
                                 isMember = !join
                             )
                             currentState.copy(spaceInfo = updatedSpaceInfo)

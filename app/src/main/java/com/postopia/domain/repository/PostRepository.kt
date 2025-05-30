@@ -14,4 +14,6 @@ interface PostRepository{
 
     suspend fun getSpacePosts(spaceId: Long, page: Int = 0, size: String? = null): Flow<Result<List<PostInfo>>>
 
+    suspend fun getPostByID(postID: Long) : Flow<Result<PostInfo>>
+
 }

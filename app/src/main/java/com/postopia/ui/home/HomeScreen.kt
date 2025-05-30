@@ -13,6 +13,7 @@ import com.postopia.ui.components.PostList
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
+    navigateToPostDetail : (Long, Long, String) -> Unit
 ){
     val uiState by viewModel.uiState.collectAsState()
 
@@ -36,8 +37,8 @@ fun HomeScreen(
         onLoadMore = {
             viewModel.handleEvent(HomeEvent.LoadMorePosts)
         },
-        onPostClick = { spaceInfo ->
-            // todo open post detail
+        onPostClick = { postID, spaceID, spaceName ->
+            navigateToPostDetail(postID, spaceID, spaceName)
         },
     )
 }

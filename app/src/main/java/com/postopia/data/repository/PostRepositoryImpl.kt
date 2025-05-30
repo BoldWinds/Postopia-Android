@@ -62,5 +62,19 @@ class PostRepositoryImpl @Inject constructor(
             emit(Result.Error(e))
         }
     }
+
+    override suspend fun getPostByID(postID: Long): Flow<Result<PostInfo>> = flow {
+        emit(Result.Loading)
+        try {
+            val response = remoteDataSource.getPostInfo(postID.toInt())
+            if(response.isSuccessful()){
+                emit(Result.Success(response.requireData()))
+            }else{
+                emit(Result.Error(Exception(response.message)))
+            }
+        }catch (e : Exception) {
+            emit(Result.Error(e))
+        }
+    }
 }
 

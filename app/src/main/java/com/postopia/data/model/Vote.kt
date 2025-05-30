@@ -41,22 +41,22 @@ data class VoteInfo (
     /**
      * 组合各部分的辅助字段
      */
-    val mergeID: Long,
-    val initiator: UserInfo,
-    val opinion: OpinionInfo,
-    val vote: VotePart
+    val mergeId: Long,
+    val initiator: UserInfo? = null,
+    val opinion: OpinionInfo? = null,
+    val vote: VotePart? = null,
 )
 
 @JsonClass(generateAdapter = true)
 data class SpaceVoteInfo (
-    val mergeID: Long,
+    val mergeId: Long,
     /**
      * 驱逐或禁言对象
      */
     val relatedUser: UserInfo,
-    val opinion: OpinionInfo,
-    val initiator: UserInfo,
-    val vote: SpaceVotePart
+    val opinion: OpinionInfo? = null,
+    val initiator: UserInfo ? = null,
+    val vote: SpaceVotePart? = null,
 )
 
 enum class DetailVoteType {
