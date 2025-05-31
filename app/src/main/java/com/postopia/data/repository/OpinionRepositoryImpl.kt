@@ -3,7 +3,8 @@ package com.postopia.data.repository
 import com.postopia.data.local.AuthLocalDataSource
 import com.postopia.data.model.Result
 import com.postopia.data.remote.OpinionRemoteDataSource
-import com.postopia.data.remote.dto.CancelPostOpinionRequest
+import com.postopia.data.remote.dto.CancelOpinionRequest
+import com.postopia.data.remote.dto.PostCommentRequest
 import com.postopia.data.remote.dto.PostOpinionRequest
 import com.postopia.domain.repository.OpinionRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +17,7 @@ class OpinionRepositoryImpl @Inject constructor(
     private val opinionRemoteDataSource: OpinionRemoteDataSource,
 ) : OpinionRepository {
 
-    override suspend fun updateOpinionStatus(
+    override suspend fun updatePostOpinion(
         postId: Long,
         spaceId: Long,
         isPositive: Boolean
@@ -42,8 +43,46 @@ class OpinionRepositoryImpl @Inject constructor(
     ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         try{
-            val request = CancelPostOpinionRequest(id = postId, isPositive = isPositive)
+            val request = CancelOpinionRequest(id = postId, isPositive = isPositive)
             val response = opinionRemoteDataSource.cancelPostOpinion(request)
+            if(response.isSuccessful()){
+                emit(Result.Success(Unit))
+            }else{
+                emit(Result.Error(Exception(response.message)))
+            }
+        }catch (e : Exception){
+            emit(Result.Error(e))
+        }
+    }
+
+    override suspend fun updateCommentOpinion(
+        commentId: Long,
+        spaceId: Long,
+        isPositive: Boolean
+    ): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try{
+            val userId = authLocalDataSource.getUserId().firstOrNull() ?: throw Exception("User not logged in")
+            val request = PostCommentRequest(commentId = commentId, spaceId = spaceId, userId = userId, isPositive = isPositive)
+            val response = opinionRemoteDataSource.postCommentOpinion(request)
+            if(response.isSuccessful()){
+                emit(Result.Success(Unit))
+            }else{
+                emit(Result.Error(Exception(response.message)))
+            }
+        }catch (e : Exception){
+            emit(Result.Error(e))
+        }
+    }
+
+    override suspend fun cancelCommentOpinion(
+        commentId: Long,
+        isPositive: Boolean
+    ): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try{
+            val request = CancelOpinionRequest(id = commentId, isPositive = isPositive)
+            val response = opinionRemoteDataSource.cancelCommentOpinion(request)
             if(response.isSuccessful()){
                 emit(Result.Success(Unit))
             }else{

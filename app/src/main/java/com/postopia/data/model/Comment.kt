@@ -4,26 +4,26 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class CommentPart (
+    val id: Long,
+    val userId: Long,
+    val parentId: Long? = null,
     val content: String,
     val createdAt: String,
-    val id: Long,
     val isPined: Boolean,
     val negativeCount: Long,
-    val parentID: Long,
     val positiveCount: Long,
-    val userID: Long
 )
 
 @JsonClass(generateAdapter = true)
 data class SpaceCommentPart (
-    val content: String,
     val id: Long,
+    val postId: Long,
+    val spaceId: Long,
+    val userId: Long,
+    val parentId: Long? = null,
+    val content: String,
     val negativeCount: Long,
-    val parentID: Long,
     val positiveCount: Long,
-    val postID: Long,
-    val spaceID: Long,
-    val userID: Long
 )
 
 @JsonClass(generateAdapter = true)
@@ -32,8 +32,8 @@ data class SearchCommentPart (
     val id: Long,
     val negativeCount: Long,
     val positiveCount: Long,
-    val postID: Long,
-    val userID: Long
+    val postId: Long,
+    val userId: Long
 )
 
 @JsonClass(generateAdapter = true)
@@ -41,7 +41,7 @@ data class CommentInfo (
     val comment: CommentPart,
     val opinion: OpinionInfo,
     val user: UserInfo,
-    val vote: VoteInfo
+    val vote: VoteInfo? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -64,4 +64,10 @@ data class SearchCommentInfo (
     val opinion: OpinionInfo,
     val post: CommentPostInfo,
     val user: UserInfo
+)
+
+@JsonClass(generateAdapter = true)
+data class RecursiveCommentInfo(
+    val comment : CommentInfo,
+    val children : List<RecursiveCommentInfo>,
 )

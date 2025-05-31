@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
+import com.postopia.ui.components.CommentTree
 import com.postopia.ui.components.LikeDislikeBar
 import com.postopia.ui.model.PostDetailUiModel
 
@@ -83,7 +84,22 @@ fun PostDetailScreen(
 
         // TODO vote
 
-        // TODO: 这里可以添加评论列表
+        items(
+            count = uiState.comments.size,
+            key = { index -> uiState.comments[index].id }
+        ) { index ->
+            val comment = uiState.comments[index]
+            CommentTree(
+                comment = comment,
+                onCommentClick = { /* TODO 点击评论 */ },
+                onUserClick = { /* TODO 点击用户 */ },
+                onUpdateOpinion = { commentId, isPositive -> viewModel.handleEvent(PostDetailEvent.UpdateCommentOpinion(commentId, spaceId, isPositive)) },
+                onCancelOpinion = { commentId, isPositive -> viewModel.handleEvent(PostDetailEvent.CancelCommentOpinion(commentId, isPositive)) },
+                onReplyClick = { commentId ->
+                    // TODO 回复评论
+                }
+            )
+        }
 
     }
 

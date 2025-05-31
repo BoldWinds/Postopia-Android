@@ -80,11 +80,11 @@ fun LikeDislikeBar(
             onClick = {
                 when (opinion) {
                     OpinionStatus.POSITIVE -> {
-                        cancelOpinion(false)
-                        updateOpinion(true)
+                        cancelOpinion(true)
+                        updateOpinion(false)
                     }
                     OpinionStatus.NEGATIVE -> {
-                        updateOpinion(false)
+                        cancelOpinion(false)
                     }
                     OpinionStatus.NIL -> {
                         updateOpinion(false)
