@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,8 +69,22 @@ fun PostDetailScreen(
     LaunchedEffect(uiState.isLoading) {
         sharedViewModel.setLoading(uiState.isLoading)
     }
+    // TODO 加载comment
+    val lazyListState = rememberLazyListState()
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisibleIndex ->
+                if (lastVisibleIndex != null &&
+                    lastVisibleIndex >= uiState.comments.size - 3 &&
+                    uiState.hasMoreComments &&
+                    !uiState.isLoadingComments) {
+                    viewModel.handleEvent(PostDetailEvent.LoadComments)
+                }
+            }
+    }
 
     LazyColumn(
+        state = lazyListState,
         modifier = Modifier
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)

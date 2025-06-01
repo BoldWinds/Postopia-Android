@@ -30,6 +30,7 @@ data class PostDetailUiState(
 
 sealed class PostDetailEvent {
     object SnackbarMessageShown : PostDetailEvent()
+    object LoadComments : PostDetailEvent()
     data class LoadPostDetail(val postId: Long, val spaceId: Long, val spaceNam: String) : PostDetailEvent()
     data class UpdatePostOpinion(val postId: Long, val spaceId: Long, val isPositive : Boolean) : PostDetailEvent()
     data class CancelPostOpinion(val postId: Long,val isPositive : Boolean) : PostDetailEvent()
@@ -67,6 +68,9 @@ class PostDetailViewModel @Inject constructor(
             }
             is PostDetailEvent.CancelCommentOpinion ->{
                 cancelCommentOpinion(event.commentId, event.isPositive)
+            }
+            is PostDetailEvent.LoadComments -> {
+                loadComments(uiState.value.postDetail.postID)
             }
         }
     }
