@@ -2,6 +2,7 @@ package com.postopia.di
 
 import com.postopia.data.repository.AuthRepositoryImpl
 import com.postopia.data.repository.CommentRepositoryImpl
+import com.postopia.data.repository.MessageRepositoryImpl
 import com.postopia.data.repository.OpinionRepositoryImpl
 import com.postopia.data.repository.PostRepositoryImpl
 import com.postopia.data.repository.SpaceRepositoryImpl
@@ -9,6 +10,7 @@ import com.postopia.data.repository.UserRepositoryImpl
 import com.postopia.data.repository.VoteRepositoryImpl
 import com.postopia.domain.repository.AuthRepository
 import com.postopia.domain.repository.CommentRepository
+import com.postopia.domain.repository.MessageRepository
 import com.postopia.domain.repository.OpinionRepository
 import com.postopia.domain.repository.PostRepository
 import com.postopia.domain.repository.SpaceRepository
@@ -57,4 +59,9 @@ abstract class RepositoryModule {
     abstract fun bindCommentRepository(
         commentRepositoryImpl: CommentRepositoryImpl
     ): CommentRepository
+
+    @Binds
+    abstract fun bindMessageRepository(
+        messageRepositoryImpl: MessageRepositoryImpl
+    ): MessageRepository
 }

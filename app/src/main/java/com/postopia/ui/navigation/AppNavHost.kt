@@ -67,7 +67,9 @@ fun AppNavHost(
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                MessageScreen()
+                MessageScreen(
+                    sharedViewModel = sharedViewModel,
+                )
         }
         composable(
             Screen.Profile.route,
