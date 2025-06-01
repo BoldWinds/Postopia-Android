@@ -12,4 +12,6 @@ interface OpinionRepository {
     suspend fun updateCommentOpinion(commentId: Long, spaceId: Long, isPositive: Boolean): Flow<Result<Unit>>
 
     suspend fun cancelCommentOpinion(commentId: Long, isPositive: Boolean): Flow<Result<Unit>>
+
+    suspend fun voteOpinion(isCommon: Boolean, id: Long, isPositive: Boolean): Flow<Result<Unit>>
 }

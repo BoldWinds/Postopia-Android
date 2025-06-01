@@ -24,3 +24,9 @@ data class PostCommentRequest(
     val isPositive: Boolean,
 )
 
+@JsonClass(generateAdapter = true)
+data class VoteOpinionRequest(
+    val id: Long,
+    val isPositive: Boolean,
+)
+

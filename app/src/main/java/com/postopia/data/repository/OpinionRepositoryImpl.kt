@@ -6,6 +6,7 @@ import com.postopia.data.remote.OpinionRemoteDataSource
 import com.postopia.data.remote.dto.CancelOpinionRequest
 import com.postopia.data.remote.dto.PostCommentRequest
 import com.postopia.data.remote.dto.PostOpinionRequest
+import com.postopia.data.remote.dto.VoteOpinionRequest
 import com.postopia.domain.repository.OpinionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -86,6 +87,25 @@ class OpinionRepositoryImpl @Inject constructor(
             if(response.isSuccessful()){
                 emit(Result.Success(Unit))
             }else{
+                emit(Result.Error(Exception(response.message)))
+            }
+        }catch (e : Exception){
+            emit(Result.Error(e))
+        }
+    }
+
+    override suspend fun voteOpinion(
+        isCommon: Boolean,
+        id: Long,
+        isPositive: Boolean
+    ): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+        try {
+            val request = VoteOpinionRequest(id = id, isPositive = isPositive)
+            val response = opinionRemoteDataSource.voteOpinion(isCommon, request)
+            if (response.isSuccessful()) {
+                emit(Result.Success(Unit))
+            } else {
                 emit(Result.Error(Exception(response.message)))
             }
         }catch (e : Exception){
