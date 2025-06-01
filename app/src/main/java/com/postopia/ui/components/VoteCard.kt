@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.postopia.data.model.OpinionStatus
 import com.postopia.ui.model.VoteDialogUiModel
 
 @Composable
@@ -36,7 +37,8 @@ fun VoteCard(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = if(voteModel.opinion == OpinionStatus.NIL) MaterialTheme.colorScheme.primaryContainer
+                else    MaterialTheme.colorScheme.surfaceVariant,
         )
     ) {
         Box(
@@ -50,7 +52,8 @@ fun VoteCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = if(voteModel.opinion == OpinionStatus.NIL) MaterialTheme.colorScheme.onPrimaryContainer
+                else    MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
