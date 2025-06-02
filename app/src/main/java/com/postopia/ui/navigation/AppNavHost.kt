@@ -12,10 +12,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.auth.AuthScreen
+import com.postopia.ui.create.CreateScreen
 import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
 import com.postopia.ui.post.PostDetailScreen
-import com.postopia.ui.post.PostScreen
 import com.postopia.ui.profile.ProfileScreen
 import com.postopia.ui.space.SpaceDetailScreen
 import com.postopia.ui.space.SpaceScreen
@@ -56,11 +56,13 @@ fun AppNavHost(
                 )
         }
         composable(
-            Screen.Post.route,
+            Screen.Create.route,
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-                PostScreen()
+            CreateScreen(
+                sharedViewModel = sharedViewModel,
+            )
         }
         composable(
             Screen.Message.route,

@@ -116,5 +116,8 @@ dependencies {
 
     // coil
     implementation(libs.coil.compose)
+
+    // rich editor
+    implementation(libs.compose.rich.editor)
 }
 

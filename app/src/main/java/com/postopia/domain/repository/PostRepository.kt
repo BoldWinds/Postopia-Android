@@ -16,4 +16,11 @@ interface PostRepository{
 
     suspend fun getPostByID(postID: Long) : Flow<Result<PostInfo>>
 
+    suspend fun createPost(
+        spaceId: Long,
+        spaceName: String,
+        subject: String,
+        content: String
+    ) : Flow<Result<Unit>>
+
 }

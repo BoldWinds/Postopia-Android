@@ -17,7 +17,7 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Default.Home, Screen.Home.route),
     BottomNavItem("Space", Icons.Default.Place, Screen.Space.route),
-    BottomNavItem("Create", Icons.Default.Add, Screen.Post.route),
+    BottomNavItem("Create", Icons.Default.Add, Screen.Create.route),
     BottomNavItem("Message", Icons.Default.Email, Screen.Message.route),
     BottomNavItem("Profile", Icons.Default.Person, Screen.Profile.route)
 )
