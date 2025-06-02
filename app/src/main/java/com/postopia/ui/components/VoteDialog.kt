@@ -312,8 +312,14 @@ fun VoteProgressBar(
     modifier: Modifier = Modifier
 ) {
     val totalCount = positiveCount + negativeCount
-    val positiveWeight = if (totalCount > 0) positiveCount.toFloat() / totalCount else 0.5f
-    val negativeWeight = if (totalCount > 0) negativeCount.toFloat() / totalCount else 0.5f
+    // 为了避免权重为0的情况，当某一方为0时，确保至少给它一个最小权重
+    val minWeight = 0.0001f
+    val positiveWeight = if (totalCount > 0) {
+        if (positiveCount > 0) positiveCount.toFloat() / totalCount else minWeight
+    } else 0.5f
+    val negativeWeight = if (totalCount > 0) {
+        if (negativeCount > 0) negativeCount.toFloat() / totalCount else minWeight
+    } else 0.5f
 
     Column(
         modifier = modifier,
@@ -325,12 +331,12 @@ fun VoteProgressBar(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Agree",
+                text = "赞成",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Disagree",
+                text = "反对",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.error
             )
@@ -403,3 +409,4 @@ private fun getVoteTypeDisplayName(voteType: VoteType): String {
         VoteType.MUTE_USER -> "禁言用户"
     }
 }
+
