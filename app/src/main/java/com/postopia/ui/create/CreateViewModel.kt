@@ -2,7 +2,6 @@ package com.postopia.ui.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mohamedrejeb.richeditor.model.RichTextState
 import com.postopia.data.model.Result
 import com.postopia.domain.mapper.SpaceMapper.toUiModel
 import com.postopia.domain.repository.PostRepository
@@ -19,7 +18,6 @@ data class CreateUiState(
     val spaces: List<SpaceDetailUiModel> = emptyList(),
     val selectedSpace: SpaceDetailUiModel? = null,
     val title: String = "",
-    val richTextState: RichTextState? = null,
     val spacePage: Int = 0,
     val isLoadingMore: Boolean = false,
     val hasMore: Boolean = true,
@@ -27,11 +25,10 @@ data class CreateUiState(
 
 sealed class CreateEvent {
     object SnackbarMessageShown : CreateEvent()
-    object CreatePost : CreateEvent()
+    data class CreatePost(val content: String) : CreateEvent()
     object LoadMoreSpaces : CreateEvent()
     data class SelectSpace(val space: SpaceDetailUiModel) : CreateEvent()
     data class ModifyTitle(val title: String) : CreateEvent()
-    data class InitRichTextState(val state: RichTextState) : CreateEvent()
 }
 
 @HiltViewModel
@@ -53,7 +50,7 @@ class CreateViewModel  @Inject constructor(
                 _uiState.value = _uiState.value.copy(snackbarMessage = null)
             }
             is CreateEvent.CreatePost -> {
-                post()
+                post(event.content)
             }
             is CreateEvent.SelectSpace -> {
                 _uiState.value = _uiState.value.copy(
@@ -62,9 +59,6 @@ class CreateViewModel  @Inject constructor(
             }
             is CreateEvent.ModifyTitle -> {
                 _uiState.value = _uiState.value.copy(title = event.title)
-            }
-            is CreateEvent.InitRichTextState -> {
-                _uiState.value = _uiState.value.copy(richTextState = event.state)
             }
             is CreateEvent.LoadMoreSpaces -> {
                 loadSpaces()
@@ -99,14 +93,13 @@ class CreateViewModel  @Inject constructor(
         }
     }
 
-    fun post(){
+    fun post(content: String){
         if(_uiState.value.selectedSpace == null) {
             _uiState.value = _uiState.value.copy(snackbarMessage = "请选择空间")
             return
         }
 
-        val htmlContent = _uiState.value.richTextState?.toHtml() ?: ""
-        if (htmlContent.isEmpty()) {
+        if (content.isEmpty()) {
             _uiState.value = _uiState.value.copy(snackbarMessage = "内容不能为空")
             return
         }
@@ -118,7 +111,7 @@ class CreateViewModel  @Inject constructor(
                 spaceId = selectedSpace.spaceID,
                 spaceName = selectedSpace.name,
                 subject = _uiState.value.title,
-                content = htmlContent,
+                content = content,
             ).collect { result->
                 when (result) {
                     is Result.Loading -> {}
