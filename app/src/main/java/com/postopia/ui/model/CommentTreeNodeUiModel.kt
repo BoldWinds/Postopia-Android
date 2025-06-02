@@ -9,12 +9,11 @@ data class CommentTreeNodeUiModel(
     val nickname: String,
     val avatarUrl: String,
     val content: String,
-    val timeAgo: String,
+    val createdAt: String,
     val positiveCount: Long,
     val negativeCount: Long,
     val opinion: OpinionStatus,
     val isPinned: Boolean,
     val depth: Int = 0,
     val children: List<CommentTreeNodeUiModel>,
-    // TODO vote
 )

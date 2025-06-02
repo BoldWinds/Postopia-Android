@@ -45,6 +45,7 @@ import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentTree
 import com.postopia.ui.components.LikeDislikeBar
+import com.postopia.ui.components.ReplyDialog
 import com.postopia.ui.components.VoteCard
 import com.postopia.ui.model.PostDetailUiModel
 
@@ -89,8 +90,7 @@ fun PostDetailScreen(
 
     LazyColumn(
         state = lazyListState,
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 顶部信息栏
@@ -99,21 +99,17 @@ fun PostDetailScreen(
                 uiInfo = postUiData,
                 updateOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.UpdatePostOpinion(postId, spaceId, isPositive)) },
                 cancelOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.CancelPostOpinion(postId, isPositive)) },
+                onReplyClick = { viewModel.handleEvent(PostDetailEvent.ShowReplyBox(null)) }
             )
         }
-
         if(uiState.vote != null){
             item{
                 VoteCard(
                     voteModel = uiState.vote!!,
                     onVote = { voteId, isPositive ->
-                        viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive))
-                    },
-                )
+                        viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive)) },)
             }
         }
-
-
         items(
             items = uiState.comments,
             key = { it.id }
@@ -122,20 +118,28 @@ fun PostDetailScreen(
                 comment = comment,
                 voteMap = uiState.commentVotes,
                 onVote = { voteId, isPositive ->
-                    viewModel.handleEvent(PostDetailEvent.CommentVoteOpinion(comment.id, voteId, isPositive))
-                },
-                onCommentClick = { /* TODO 点击评论 */ },
+                    viewModel.handleEvent(PostDetailEvent.CommentVoteOpinion(comment.id, voteId, isPositive)) },
+                onCommentClick = { comment -> viewModel.handleEvent(PostDetailEvent.ShowReplyBox(comment)) },
                 onUserClick = { /* TODO 点击用户 */ },
                 onUpdateOpinion = { commentId, isPositive -> viewModel.handleEvent(PostDetailEvent.UpdateCommentOpinion(commentId, spaceId, isPositive)) },
                 onCancelOpinion = { commentId, isPositive -> viewModel.handleEvent(PostDetailEvent.CancelCommentOpinion(commentId, isPositive)) },
-                onReplyClick = { commentId ->
-                    // TODO 回复评论
-                }
+                onReplyClick = { commentId -> viewModel.handleEvent(PostDetailEvent.ShowReplyBox(comment)) }
             )
         }
-
     }
 
+    ReplyDialog(
+        isVisible = uiState.isReplyBoxVisible,
+        replyToUser = uiState.replyToComment?.username ?: uiState.postDetail.nickname,
+        replyToTime = uiState.replyToComment?.createdAt ?: uiState.postDetail.createdAt,
+        replyToContent = uiState.replyToComment?.content ?: uiState.postDetail.content,
+        onSendReply = { content ->
+            viewModel.handleEvent(PostDetailEvent.SendReply(content))
+        },
+        onDismiss = {
+            viewModel.handleEvent(PostDetailEvent.HideReplyBox)
+        }
+    )
 }
 
 @Composable
@@ -143,11 +147,13 @@ fun PostContent(
     uiInfo: PostDetailUiModel,
     updateOpinion: (Boolean) -> Unit,
     cancelOpinion: (Boolean) -> Unit,
+    onReplyClick: () -> Unit,
 ){
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
+            .clickable{onReplyClick}
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -246,7 +252,7 @@ fun PostContent(
                 // 评论按钮
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { /* TODO 评论 */ }
+                    modifier = Modifier.clickable { onReplyClick() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,

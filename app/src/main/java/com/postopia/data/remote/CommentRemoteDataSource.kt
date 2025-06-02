@@ -1,7 +1,6 @@
 package com.postopia.data.remote
 
 import com.postopia.data.model.ApiResponse
-import com.postopia.data.model.CommentInfo
 import com.postopia.data.model.OpinionCommentInfo
 import com.postopia.data.model.PageData
 import com.postopia.data.model.RecursiveCommentInfo
@@ -15,7 +14,7 @@ import retrofit2.http.Query
 
 interface CommentRemoteDataSource {
     @POST("/comment/create")
-    suspend fun createComment(@Body request: CreateCommentRequest): ApiResponse<PageData<CommentInfo>>
+    suspend fun createComment(@Body request: CreateCommentRequest): ApiResponse<Long>
 
     @GET("/comment/post")
     suspend fun getPostComments(@Query("postId") postId: Long, @Query("page") page: Int = 0, ): ApiResponse<PageData<RecursiveCommentInfo>>

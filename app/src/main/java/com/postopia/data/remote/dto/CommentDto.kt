@@ -4,10 +4,9 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class CreateCommentRequest(
-    val commentId: Int,
-    val postId: Int,
+    val postId: Long,
     val content: String,
-    val spaceId: Int,
-    val userId: Int,
-    val parentId: Int? = null,
+    val spaceId: Long,
+    val userId: Long,
+    val parentId: Long? = null,
 )

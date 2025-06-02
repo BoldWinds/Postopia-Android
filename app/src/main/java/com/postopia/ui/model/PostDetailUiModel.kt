@@ -17,8 +17,6 @@ data class PostDetailUiModel(
     val commentCount : Long,
     val isArchived : Boolean,
     val createdAt : String,
-    // todo vote info
-    // todo comment info
 ) {
     companion object {
         fun default(): PostDetailUiModel = PostDetailUiModel(

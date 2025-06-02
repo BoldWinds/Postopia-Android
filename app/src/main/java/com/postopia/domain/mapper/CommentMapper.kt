@@ -12,7 +12,7 @@ object CommentMapper {
             nickname = comment.user.nickname,
             avatarUrl = comment.user.avatar,
             content = comment.comment.content,
-            timeAgo = comment.comment.createdAt,
+            createdAt = comment.comment.createdAt,
             positiveCount = comment.comment.positiveCount,
             negativeCount = comment.comment.negativeCount,
             opinion = comment.opinion.opinionStatus,

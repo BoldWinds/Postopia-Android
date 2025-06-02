@@ -30,7 +30,9 @@ data class PostDetailUiState(
     val isLoadingComments : Boolean = false,
     val hasMoreComments : Boolean = true,
     val vote : VoteDialogUiModel? = null,
-    val commentVotes : Map<Long, VoteDialogUiModel> = emptyMap<Long, VoteDialogUiModel>(),  // key is commentID
+    val commentVotes : Map<Long, VoteDialogUiModel> = emptyMap<Long, VoteDialogUiModel>(),
+    val replyToComment: CommentTreeNodeUiModel? = null,  // 当前回复的评论ID，null表示直接回复帖子
+    val isReplyBoxVisible: Boolean = false,  // 控制回复框是否可见
 )
 
 sealed class PostDetailEvent {
@@ -43,6 +45,11 @@ sealed class PostDetailEvent {
     data class CancelCommentOpinion(val commentId: Long, val isPositive: Boolean) : PostDetailEvent()
     data class VoteOpinion(val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
     data class CommentVoteOpinion(val commentId: Long, val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
+
+    // 新增回复相关事件
+    data class ShowReplyBox(val comment: CommentTreeNodeUiModel?) : PostDetailEvent()
+    object HideReplyBox : PostDetailEvent()
+    data class SendReply(val content: String) : PostDetailEvent()
 }
 
 @HiltViewModel
@@ -85,6 +92,15 @@ class PostDetailViewModel @Inject constructor(
             }
             is PostDetailEvent.CommentVoteOpinion -> {
                 voteOpinion(event.voteId, event.isPositive, event.commentId)
+            }
+            is PostDetailEvent.ShowReplyBox -> {
+                _uiState.update { it.copy(replyToComment = event.comment, isReplyBoxVisible = true) }
+            }
+            is PostDetailEvent.HideReplyBox -> {
+                _uiState.update { it.copy(replyToComment = null, isReplyBoxVisible = false) }
+            }
+            is PostDetailEvent.SendReply -> {
+                sendReply(event.content)
             }
         }
     }
@@ -350,5 +366,29 @@ class PostDetailViewModel @Inject constructor(
             }
         }
     }
-}
 
+    fun sendReply(content: String) {
+        val parenID = _uiState.value.replyToComment?.id
+        viewModelScope.launch {
+            commentRepository.replyComment(
+                postId = _uiState.value.postDetail.postID,
+                spaceId = _uiState.value.postDetail.spaceID,
+                userId = _uiState.value.postDetail.userID,
+                content = content,
+                parentId = parenID,
+            ).collect { result ->
+                when (result) {
+                    is Result.Loading -> { }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isReplyBoxVisible = false, commentsPage = 0, comments = emptyList()) }
+                        // reload
+                        loadComments(uiState.value.postDetail.postID)
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                    }
+                }
+            }
+        }
+    }
+}
