@@ -3,11 +3,12 @@ package com.postopia.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
-import com.postopia.data.model.UserDetail
 import com.postopia.domain.mapper.PostMapper.toPostCardInfo
+import com.postopia.domain.mapper.ProfileMapper.toUiModel
 import com.postopia.domain.repository.PostRepository
 import com.postopia.domain.repository.UserRepository
 import com.postopia.ui.model.PostCardInfo
+import com.postopia.ui.model.ProfileUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +19,7 @@ import javax.inject.Inject
 data class ProfileUiState(
     val isLoading: Boolean = true,
     val selectedTab : Int = 0,
-    val userDetail: UserDetail? = null,
+    val userDetail: ProfileUiModel = ProfileUiModel.default(),
     val snackbarMessage: String? = null,
     val userPosts : List<PostCardInfo> = emptyList(),
     val isLoadingPosts : Boolean = false,
@@ -43,7 +44,6 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadUserProfile()
-        loadUserPosts()
     }
 
     fun handleEvent(event: ProfileEvent) {
@@ -69,9 +69,10 @@ class ProfileViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                userDetail = result.data,
+                                userDetail = result.data.toUiModel(),
                             )
                         }
+                        loadUserPosts()
                     }
                     is Result.Error -> {
                         _uiState.update {
@@ -87,8 +88,8 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun loadUserPosts() {
-        val nickname = _uiState.value.userDetail?.nickname ?: "Unknown User"
-        val avatar = _uiState.value.userDetail?.avatar ?: ""
+        val nickname = _uiState.value.userDetail.nickname
+        val avatar = _uiState.value.userDetail.avatar
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingPosts = true) }
             postRepository.getUserPosts(_uiState.value.postPage).collect { result ->
