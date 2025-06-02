@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.PushPin
@@ -34,20 +33,25 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.model.CommentTreeNodeUiModel
+import com.postopia.ui.model.VoteDialogUiModel
 
 
 @Composable
 fun CommentTree(
     comment: CommentTreeNodeUiModel,
+    voteMap: Map<Long, VoteDialogUiModel>,
+    onVote: (Long, Boolean) -> Unit,
     onCommentClick: (CommentTreeNodeUiModel) -> Unit,
     onUserClick: (CommentTreeNodeUiModel) -> Unit,
-    onUpdateOpinion : (Long, Boolean) -> Unit,
-    onCancelOpinion : (Long, Boolean) -> Unit,
+    onUpdateOpinion: (Long, Boolean) -> Unit,
+    onCancelOpinion: (Long, Boolean) -> Unit,
     onReplyClick: (Long) -> Unit
 ) {
     Column {
         CommentItem(
             comment = comment,
+            vote = voteMap[comment.id],
+            onVote = onVote,
             onCommentClick = onCommentClick,
             onCancelOpinion = onCancelOpinion,
             onUpdateOpinion = onUpdateOpinion,
@@ -63,6 +67,8 @@ fun CommentTree(
                     Spacer(modifier = Modifier.height(8.dp))
                     CommentTree(
                         comment = childComment,
+                        voteMap = voteMap,
+                        onVote = onVote,
                         onCommentClick = onCommentClick,
                         onUserClick = onUserClick,
                         onCancelOpinion = onCancelOpinion,
@@ -78,9 +84,11 @@ fun CommentTree(
 @Composable
 private fun CommentItem(
     comment: CommentTreeNodeUiModel,
+    vote: VoteDialogUiModel?,
+    onVote: (Long, Boolean) -> Unit,
     onCommentClick: (CommentTreeNodeUiModel) -> Unit,
-    onUpdateOpinion : (Long, Boolean) -> Unit,
-    onCancelOpinion : (Long, Boolean) -> Unit,
+    onUpdateOpinion: (Long, Boolean) -> Unit,
+    onCancelOpinion: (Long, Boolean) -> Unit,
     onReplyClick: (Long) -> Unit
 ) {
     Card(
@@ -152,6 +160,12 @@ private fun CommentItem(
                     }
                 }
 
+                // 添加VoteButton，仅当vote不为null时显示
+                if (vote != null) {
+                    VoteButton(voteModel = vote, onVote = onVote)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
                 Text(
                     text = comment.timeAgo,
                     style = MaterialTheme.typography.bodySmall,
@@ -219,51 +233,5 @@ private fun CommentItem(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun VoteButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    count: Long,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = if (isSelected)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        if (count > 0) {
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = formatCount(count),
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isSelected)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-private fun formatCount(count: Long): String {
-    return when {
-        count >= 1000000 -> "${count / 1000000}M"
-        count >= 1000 -> "${count / 1000}K"
-        else -> count.toString()
     }
 }

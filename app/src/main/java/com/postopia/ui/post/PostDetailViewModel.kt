@@ -3,14 +3,17 @@ package com.postopia.ui.post
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.OpinionStatus
+import com.postopia.data.model.RecursiveCommentInfo
 import com.postopia.data.model.Result
 import com.postopia.domain.mapper.CommentMapper.toUiModel
 import com.postopia.domain.mapper.PostMapper.toUiModel
+import com.postopia.domain.mapper.VoteMapper.toUiModel
 import com.postopia.domain.repository.CommentRepository
 import com.postopia.domain.repository.OpinionRepository
 import com.postopia.domain.repository.PostRepository
 import com.postopia.ui.model.CommentTreeNodeUiModel
 import com.postopia.ui.model.PostDetailUiModel
+import com.postopia.ui.model.VoteDialogUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +28,9 @@ data class PostDetailUiState(
     val comments : List<CommentTreeNodeUiModel> = emptyList<CommentTreeNodeUiModel>(),
     val commentsPage : Int = 0,
     val isLoadingComments : Boolean = false,
-    val hasMoreComments : Boolean = false,
+    val hasMoreComments : Boolean = true,
+    val vote : VoteDialogUiModel? = null,
+    val commentVotes : Map<Long, VoteDialogUiModel> = emptyMap<Long, VoteDialogUiModel>(),  // key is commentID
 )
 
 sealed class PostDetailEvent {
@@ -36,6 +41,8 @@ sealed class PostDetailEvent {
     data class CancelPostOpinion(val postId: Long,val isPositive : Boolean) : PostDetailEvent()
     data class UpdateCommentOpinion(val commentId: Long, val spaceId: Long ,val isPositive: Boolean) : PostDetailEvent()
     data class CancelCommentOpinion(val commentId: Long, val isPositive: Boolean) : PostDetailEvent()
+    data class VoteOpinion(val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
+    data class CommentVoteOpinion(val commentId: Long, val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
 }
 
 @HiltViewModel
@@ -55,6 +62,7 @@ class PostDetailViewModel @Inject constructor(
             }
             is PostDetailEvent.LoadPostDetail -> {
                 loadPostDetail(event.postId, event.spaceId, event.spaceNam)
+                _uiState.update { it.copy(commentsPage = 0) }
                 loadComments(event.postId)
             }
             is PostDetailEvent.UpdatePostOpinion -> {
@@ -72,6 +80,12 @@ class PostDetailViewModel @Inject constructor(
             is PostDetailEvent.LoadComments -> {
                 loadComments(uiState.value.postDetail.postID)
             }
+            is PostDetailEvent.VoteOpinion -> {
+                voteOpinion(event.voteId, event.isPositive)
+            }
+            is PostDetailEvent.CommentVoteOpinion -> {
+                voteOpinion(event.voteId, event.isPositive, event.commentId)
+            }
         }
     }
 
@@ -82,7 +96,12 @@ class PostDetailViewModel @Inject constructor(
                 when (result) {
                     is Result.Loading -> {}
                     is Result.Success -> {
-                        _uiState.update { it.copy(postDetail = result.data.toUiModel(spaceId, spaceName), isLoading = false) }
+                        _uiState.update {
+                            it.copy(
+                                postDetail = result.data.toUiModel(spaceId, spaceName),
+                                vote = result.data.vote?.toUiModel(),
+                                isLoading = false)
+                        }
                     }
                     is Result.Error -> {
                         _uiState.update { it.copy(isLoading = false, snackbarMessage = result.exception.message) }
@@ -100,13 +119,36 @@ class PostDetailViewModel @Inject constructor(
                 when (result) {
                     is Result.Loading -> {}
                     is Result.Success -> {
+                        // 从评论树中递归提取所有投票信息
+                        val newVotes = mutableMapOf<Long, VoteDialogUiModel>()
+
+                        // 递归函数用于遍历评论树并提取投票信息
+                        fun extractVotes(comments: List<RecursiveCommentInfo>) {
+                            for (commentInfo in comments) {
+                                // 如果评论有投票信息，则添加到map中
+                                if (commentInfo.comment.vote != null) {
+                                    newVotes[commentInfo.comment.comment.id] = commentInfo.comment.vote.toUiModel()
+                                }
+                                // 递归处理子评论
+                                if (commentInfo.children.isNotEmpty()) {
+                                    extractVotes(commentInfo.children)
+                                }
+                            }
+                        }
+
+                        extractVotes(result.data)
+
                         _uiState.update { currentState ->
                             val updatedComments = currentState.comments + result.data.map { it.toUiModel() }
+                            // 合并现有和新的投票信息
+                            val updatedVotes = currentState.commentVotes + newVotes
+
                             currentState.copy(
                                 comments = updatedComments,
                                 isLoadingComments = false,
                                 hasMoreComments = result.data.isNotEmpty(),
-                                commentsPage = page + 1
+                                commentsPage = page + 1,
+                                commentVotes = updatedVotes
                             )
                         }
                     }
@@ -238,4 +280,75 @@ class PostDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun voteOpinion(voteId: Long, isPositive: Boolean, commentID: Long? = null) {
+        val vote = if (commentID != null)   _uiState.value.commentVotes[commentID] else _uiState.value.vote
+        if(vote == null){
+            _uiState.update { it.copy(snackbarMessage = "Vote Null Error!") }
+        } else {
+            val (newPositiveCount, newNegativeCount) = when (vote.opinion) {
+                OpinionStatus.POSITIVE -> {
+                    if (isPositive) {
+                        // 保持赞成
+                        return
+                    } else {
+                        // 从赞成改为反对
+                        Pair(vote.positiveCount - 1, vote.negativeCount + 1)
+                    }
+                }
+                OpinionStatus.NEGATIVE -> {
+                    if (isPositive) {
+                        // 从反对改为赞成
+                        Pair(vote.positiveCount + 1, vote.negativeCount - 1)
+                    } else {
+                        // 保持反对
+                        return
+                    }
+                }
+                OpinionStatus.NIL -> {
+                    // 新增投票
+                    Pair(
+                        if (isPositive) vote.positiveCount + 1 else vote.positiveCount,
+                        if (!isPositive) vote.negativeCount + 1 else vote.negativeCount
+                    )
+                }
+            }
+            viewModelScope.launch {
+                // 这个ViewModel中只有帖子和评论投票，所以isCommon一定为false
+                opinionRepository.voteOpinion(false, voteId, isPositive).collect { result->
+                    when (result) {
+                        is Result.Loading -> { }
+                        is Result.Success -> {
+                            _uiState.update { currentState ->
+                                if (commentID != null) {
+                                    // 更新评论投票状态
+                                    val updatedVote = vote.copy(
+                                        positiveCount = newPositiveCount,
+                                        negativeCount = newNegativeCount,
+                                        opinion = if (isPositive) OpinionStatus.POSITIVE else OpinionStatus.NEGATIVE
+                                    )
+                                    val updatedCommentVotes = currentState.commentVotes.toMutableMap().apply {
+                                        put(commentID, updatedVote)
+                                    }
+                                    currentState.copy(commentVotes = updatedCommentVotes)
+                                } else {
+                                    // 更新帖子投票状态
+                                    val updatedVote = vote.copy(
+                                        positiveCount = newPositiveCount,
+                                        negativeCount = newNegativeCount,
+                                        opinion = if (isPositive) OpinionStatus.POSITIVE else OpinionStatus.NEGATIVE
+                                    )
+                                    currentState.copy(vote = updatedVote)
+                                }
+                            }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+

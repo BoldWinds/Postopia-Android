@@ -2,15 +2,18 @@ package com.postopia.ui.space
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.postopia.data.model.OpinionStatus
 import com.postopia.data.model.Result
-import com.postopia.data.model.SpaceVoteInfo
 import com.postopia.domain.mapper.PostMapper.toPostCardInfo
 import com.postopia.domain.mapper.SpaceMapper.toUiModel
+import com.postopia.domain.mapper.VoteMapper.toUiModel
+import com.postopia.domain.repository.OpinionRepository
 import com.postopia.domain.repository.PostRepository
 import com.postopia.domain.repository.SpaceRepository
 import com.postopia.domain.repository.VoteRepository
 import com.postopia.ui.model.PostCardInfo
 import com.postopia.ui.model.SpaceDetailUiModel
+import com.postopia.ui.model.VoteDialogUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +29,7 @@ data class SpaceDetailUiState(
     val isLoadingMore : Boolean = false,
     val hasMore : Boolean = true,
     val page : Int = 0,
-    val votes : List<SpaceVoteInfo> = emptyList<SpaceVoteInfo>()
+    val votes : List<VoteDialogUiModel> = emptyList<VoteDialogUiModel>()
 )
 
 sealed class SpaceDetailEvent {
@@ -34,6 +37,7 @@ sealed class SpaceDetailEvent {
     data class LoadSpaceDetail(val spaceId: Long) : SpaceDetailEvent()
     data class JoinOrLeave(val spaceId: Long, val join : Boolean) : SpaceDetailEvent()
     object LoadMorePosts : SpaceDetailEvent()
+    data class VoteOpinion(val voteId: Long, val isPositive: Boolean) : SpaceDetailEvent()
 }
 
 @HiltViewModel
@@ -41,6 +45,7 @@ class SpaceDetailViewModel @Inject constructor(
     private val spaceRepository: SpaceRepository,
     private val postRepository : PostRepository,
     private val voteRepository : VoteRepository,
+    private val opinionRepository : OpinionRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SpaceDetailUiState())
     val uiState = _uiState.asStateFlow()
@@ -58,6 +63,9 @@ class SpaceDetailViewModel @Inject constructor(
             }
             is SpaceDetailEvent.LoadMorePosts -> {
                 loadPosts()
+            }
+            is SpaceDetailEvent.VoteOpinion -> {
+                voteOpinion(event.voteId, event.isPositive)
             }
         }
     }
@@ -110,7 +118,7 @@ class SpaceDetailViewModel @Inject constructor(
                         is Result.Success -> {
                             _uiState.update { currentState ->
                                 currentState.copy(
-                                    votes = result.data,
+                                    votes = result.data.map { it.toUiModel() },
                                 )
                             }
                         }
@@ -176,6 +184,69 @@ class SpaceDetailViewModel @Inject constructor(
                     }
                     is Result.Error -> {
                         _uiState.update { it.copy(snackbarMessage = result.message) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun voteOpinion(voteId: Long, isPositive: Boolean) {
+        val vote = _uiState.value.votes.find { it.voteID == voteId }
+        if(vote == null){
+            _uiState.update { it.copy(snackbarMessage = "Vote Null Error!") }
+        } else {
+            val (newPositiveCount, newNegativeCount) = when (vote.opinion) {
+                OpinionStatus.POSITIVE -> {
+                    if (isPositive) {
+                        // 保持赞成
+                        return
+                    } else {
+                        // 从赞成改为反对
+                        Pair(vote.positiveCount - 1, vote.negativeCount + 1)
+                    }
+                }
+                OpinionStatus.NEGATIVE -> {
+                    if (isPositive) {
+                        // 从反对改为赞成
+                        Pair(vote.positiveCount + 1, vote.negativeCount - 1)
+                    } else {
+                        // 保持反对
+                        return
+                    }
+                }
+                OpinionStatus.NIL -> {
+                    // 新增投票
+                    Pair(
+                        if (isPositive) vote.positiveCount + 1 else vote.positiveCount,
+                        if (!isPositive) vote.negativeCount + 1 else vote.negativeCount
+                    )
+                }
+            }
+            viewModelScope.launch {
+                // 这个ViewModel中只有帖子和评论投票，所以isCommon一定为false
+                opinionRepository.voteOpinion(false, voteId, isPositive).collect { result->
+                    when (result) {
+                        is Result.Loading -> { }
+                        is Result.Success -> {
+                            _uiState.update { currentState ->
+                                // 更新帖子投票状态
+                                val updatedVotes = currentState.votes.map {
+                                    if (it.voteID == voteId) {
+                                        it.copy(
+                                            positiveCount = newPositiveCount,
+                                            negativeCount = newNegativeCount,
+                                            opinion = if (isPositive) OpinionStatus.POSITIVE else OpinionStatus.NEGATIVE
+                                        )
+                                    } else {
+                                        it
+                                    }
+                                }
+                                currentState.copy(votes = updatedVotes)
+                            }
+                        }
+                        is Result.Error -> {
+                            _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                        }
                     }
                 }
             }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +43,7 @@ import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentTree
 import com.postopia.ui.components.LikeDislikeBar
+import com.postopia.ui.components.VoteCard
 import com.postopia.ui.model.PostDetailUiModel
 
 @Composable
@@ -69,7 +71,7 @@ fun PostDetailScreen(
     LaunchedEffect(uiState.isLoading) {
         sharedViewModel.setLoading(uiState.isLoading)
     }
-    // TODO 加载comment
+
     val lazyListState = rememberLazyListState()
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
@@ -98,15 +100,28 @@ fun PostDetailScreen(
             )
         }
 
-        // TODO vote
+        if(uiState.vote != null){
+            item{
+                VoteCard(
+                    voteModel = uiState.vote!!,
+                    onVote = { voteId, isPositive ->
+                        viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive))
+                    },
+                )
+            }
+        }
+
 
         items(
-            count = uiState.comments.size,
-            key = { index -> uiState.comments[index].id }
-        ) { index ->
-            val comment = uiState.comments[index]
+            items = uiState.comments,
+            key = { it.id }
+        ) { comment ->
             CommentTree(
                 comment = comment,
+                voteMap = uiState.commentVotes,
+                onVote = { voteId, isPositive ->
+                    viewModel.handleEvent(PostDetailEvent.CommentVoteOpinion(comment.id, voteId, isPositive))
+                },
                 onCommentClick = { /* TODO 点击评论 */ },
                 onUserClick = { /* TODO 点击用户 */ },
                 onUpdateOpinion = { commentId, isPositive -> viewModel.handleEvent(PostDetailEvent.UpdateCommentOpinion(commentId, spaceId, isPositive)) },
@@ -250,3 +265,4 @@ fun PostContent(
         }
     }
 }
+

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.postopia.ui.SharedViewModel
-import com.postopia.ui.components.PostList
+import com.postopia.ui.components.PostCard
+import com.postopia.ui.components.VoteCard
 import com.postopia.ui.model.SpaceDetailUiModel
 import com.postopia.utils.DateUtils
 
@@ -62,36 +69,107 @@ fun SpaceDetailScreen(
         sharedViewModel.setLoading(uiState.isLoading)
     }
 
-    Column(
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }.collect { lastVisibleIndex ->
+            if (lastVisibleIndex != null &&
+                lastVisibleIndex >= uiState.spacePosts.size - 3 &&
+                uiState.hasMore &&
+                !uiState.isLoadingMore){
+                viewModel.handleEvent(SpaceDetailEvent.LoadMorePosts)
+            }
+
+        }
+    }
+
+    LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        SpaceDetailTopBar(
-            uiInfo = spaceUiInfo,
-            onJoinClick = {
-                viewModel.handleEvent(SpaceDetailEvent.JoinOrLeave(spaceId, join = spaceUiInfo.isMember == true))
-            }
-        )
-        // 空间详情信息
-        SpaceDetailInfo(uiInfo = spaceUiInfo)
+        // 头部：空间详情顶部栏
+        item {
+            SpaceDetailTopBar(
+                uiInfo = spaceUiInfo,
+                onJoinClick = {
+                    viewModel.handleEvent(SpaceDetailEvent.JoinOrLeave(spaceId, join = spaceUiInfo.isMember == true))
+                }
+            )
+        }
 
-        // TODO 空间帖子 与投票 的 tab
-        PostList(
-            posts = uiState.spacePosts,
-            isLoadingMore = uiState.isLoadingMore,
-            hasMore = uiState.hasMore,
-            onLoadMore = {
-                viewModel.handleEvent(SpaceDetailEvent.LoadMorePosts)
-            },
-            onPostClick = { postId, spaceId, spaceName ->
-                navigateToPostDetail(postId, spaceId, spaceName)
-            },
-        )
+        // 空间详情信息
+        item {
+            SpaceDetailInfo(uiInfo = spaceUiInfo)
+        }
+
+        items(
+            items = uiState.votes,
+            key = { it.voteID }
+        ){ voteItem ->
+            VoteCard(
+                voteModel = voteItem,
+                onVote = { voteId, isPositive ->
+                    viewModel.handleEvent(SpaceDetailEvent.VoteOpinion(voteId, isPositive))
+                },
+            )
+        }
+
+        // 帖子列表
+        items(
+            items = uiState.spacePosts,
+            key = { it.postID }
+        ) { postItem ->
+            PostCard(
+                postItem = postItem,
+                onPostClick = { postId ->
+                    navigateToPostDetail(postId, postItem.spaceID, postItem.spaceName)
+                }
+            )
+        }
+
+        // 加载更多指示器
+        if (uiState.isLoadingMore && uiState.spacePosts.isNotEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(32.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+
+        // 空状态
+        if (uiState.spacePosts.isEmpty() && !uiState.isLoadingMore) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "暂无帖子",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
 }
-
 
 @Composable
 fun SpaceDetailTopBar(
@@ -249,3 +327,4 @@ fun StatisticItem(
         )
     }
 }
+
