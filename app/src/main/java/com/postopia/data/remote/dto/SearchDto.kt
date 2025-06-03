@@ -18,7 +18,7 @@ data class UserDoc(
 
 @JsonClass(generateAdapter = true)
 data class CommentDoc(
-    val int: String,
+    val id: String,
     val content: String,
     val spaceId: Long,
     val postId: Long,

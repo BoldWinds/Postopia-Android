@@ -5,13 +5,4 @@ public enum SearchType {
     SPACE,
     USER,
     COMMENT;
-
-    public static SearchType fromString(String text) {
-        for (SearchType type : SearchType.values()) {
-            if (type.name().equalsIgnoreCase(text)) {
-                return type;
-            }
-        }
-        throw new IllegalArgumentException("未知的搜索类型: " + text);
-    }
 }

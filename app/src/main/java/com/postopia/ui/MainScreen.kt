@@ -24,6 +24,7 @@ import com.postopia.ui.components.BottomNavigationBar
 import com.postopia.ui.components.LoadingContainer
 import com.postopia.ui.components.TopBar
 import com.postopia.ui.navigation.AppNavHost
+import com.postopia.ui.navigation.Screen
 import com.postopia.ui.navigation.bottomNavItems
 
 @Composable
@@ -73,7 +74,7 @@ fun MainScreen(
             }},
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            if(shouldShowBars) TopBar({}, {}, {navController.navigate("auth")})
+            if(shouldShowBars) TopBar({}, {query->navController.navigate(Screen.Search.createRoute(query))}, {navController.navigate("auth")})
         },
         bottomBar = {
             if(shouldShowBars) BottomNavigationBar(items = bottomNavItems, navController = navController)

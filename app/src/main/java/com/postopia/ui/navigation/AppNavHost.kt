@@ -151,6 +151,7 @@ fun AppNavHost(
             val query = backStackEntry.arguments?.getString("query") ?: ""
 
             SearchScreen(
+                sharedViewModel = sharedViewModel,
                 query = query,
                 onBack = { navController.popBackStack() },
                 navigateToRoute = { route->

@@ -3,7 +3,9 @@ package com.postopia.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.Result
+import com.postopia.domain.mapper.CommentMapper.toUiModel
 import com.postopia.domain.mapper.PostMapper.toPostCardInfo
+import com.postopia.domain.mapper.ProfileMapper.toUiModel
 import com.postopia.domain.mapper.SpaceMapper.toUiModel
 import com.postopia.domain.repository.SearchRepository
 import com.postopia.ui.model.SearchType
@@ -15,16 +17,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SearchUiState(
+    val snackbarMessage: String? = null,
     val searchType: SearchType = SearchType.POST,
     val query: String = "",
+    val selectedTab: Int = 0,
     val searchResults: List<Any> = emptyList(),
     val isLoadingResults : Boolean = false,
-    val hasMoreResults: Boolean = true,
+    val hasMoreResults: Boolean = false,
     val currentPage: Int = 0,
 )
 
 sealed class SearchEvent {
-    data class NewSearch(val query: String) : SearchEvent()
+    object SnackbarMessageShown : SearchEvent()
+    data class NewSearch(val query: String, val tabIndex: Int) : SearchEvent()
     object LoadMoreResults : SearchEvent()
 }
 
@@ -38,11 +43,24 @@ class SearchViewModel @Inject constructor(
 
     fun handleEvent(event: SearchEvent) {
         when (event) {
+            is SearchEvent.SnackbarMessageShown -> {
+                _uiState.update { it.copy(snackbarMessage = null) }
+            }
             is SearchEvent.NewSearch -> {
                 _uiState.update {
                     it.copy(
                         query = event.query,
+                        selectedTab = event.tabIndex,
+                        searchType = when (event.tabIndex) {
+                            0 -> SearchType.POST
+                            1 -> SearchType.COMMENT
+                            2 -> SearchType.SPACE
+                            else -> SearchType.USER
+                        },
+                        isLoadingResults = false,
+                        hasMoreResults = false,
                         currentPage = 0,
+                        searchResults = emptyList(),
                     )
                 }
                 performSearch(_uiState.value.searchType, event.query)
@@ -68,13 +86,13 @@ class SearchViewModel @Inject constructor(
                                     state.copy(
                                         searchResults = if (state.currentPage == 0) newResults else state.searchResults + newResults,
                                         isLoadingResults = false,
-                                        hasMoreResults = newResults.isNotEmpty(),
+                                        hasMoreResults = newResults.size == 20,
                                         currentPage = state.currentPage + 1
                                     )
                                 }
                             }
                             is Result.Error -> {
-                                _uiState.update { it.copy(isLoadingResults = false, hasMoreResults = false) }
+                                _uiState.update { it.copy(snackbarMessage = result.message, isLoadingResults = false, hasMoreResults = false) }
                             }
                         }
                     }
@@ -84,18 +102,18 @@ class SearchViewModel @Inject constructor(
                         when (result) {
                             is Result.Loading -> {}
                             is Result.Success -> {
-                                val newResults = result.data
+                                val newResults = result.data.map { it.toUiModel() }
                                 _uiState.update { state ->
                                     state.copy(
                                         searchResults = if (state.currentPage == 0) newResults else state.searchResults + newResults,
                                         isLoadingResults = false,
-                                        hasMoreResults = newResults.isNotEmpty(),
+                                        hasMoreResults = newResults.size == 20,
                                         currentPage = state.currentPage + 1
                                     )
                                 }
                             }
                             is Result.Error -> {
-                                _uiState.update { it.copy(isLoadingResults = false, hasMoreResults = false) }
+                                _uiState.update { it.copy(snackbarMessage = result.message, isLoadingResults = false, hasMoreResults = false) }
                             }
                         }
                     }
@@ -110,13 +128,13 @@ class SearchViewModel @Inject constructor(
                                     state.copy(
                                         searchResults = if (state.currentPage == 0) newResults else state.searchResults + newResults,
                                         isLoadingResults = false,
-                                        hasMoreResults = newResults.isNotEmpty(),
+                                        hasMoreResults = newResults.size == 20,
                                         currentPage = state.currentPage + 1
                                     )
                                 }
                             }
                             is Result.Error -> {
-                                _uiState.update { it.copy(isLoadingResults = false, hasMoreResults = false) }
+                                _uiState.update { it.copy(snackbarMessage = result.message, isLoadingResults = false, hasMoreResults = false) }
                             }
                         }
                     }
@@ -126,18 +144,18 @@ class SearchViewModel @Inject constructor(
                         when (result) {
                             is Result.Loading -> {}
                             is Result.Success -> {
-                                val newResults = result.data
+                                val newResults = result.data.map{ it.toUiModel() }
                                 _uiState.update { state ->
                                     state.copy(
                                         searchResults = if (state.currentPage == 0) newResults else state.searchResults + newResults,
                                         isLoadingResults = false,
-                                        hasMoreResults = newResults.isNotEmpty(),
+                                        hasMoreResults = newResults.size == 20,
                                         currentPage = state.currentPage + 1
                                     )
                                 }
                             }
                             is Result.Error -> {
-                                _uiState.update { it.copy(isLoadingResults = false, hasMoreResults = false) }
+                                _uiState.update { it.copy(snackbarMessage = result.message, isLoadingResults = false, hasMoreResults = false) }
                             }
                         }
                     }

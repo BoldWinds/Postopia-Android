@@ -1,8 +1,8 @@
 package com.postopia.data.repository
 
 import com.postopia.data.model.FeedPostInfo
+import com.postopia.data.model.GeneralCommentInfo
 import com.postopia.data.model.Result
-import com.postopia.data.model.SearchCommentInfo
 import com.postopia.data.model.SpaceInfo
 import com.postopia.data.model.SpacePart
 import com.postopia.data.model.UserInfo
@@ -32,7 +32,12 @@ class SearchRepositoryImpl @Inject constructor(
         try {
             val response = remoteDataSource.searchPost(query, page, size)
             if (response.isSuccessful()) {
-                val ids = response.requireData().requireData().map { it.id }
+                val postDocs = response.requireData().requireData()
+                if(postDocs.isEmpty()){
+                    emit(Result.Success(emptyList()))
+                    return@flow
+                }
+                val ids = postDocs.map { it.id }
                 val postsResponse = postRemoteDataSource.searchPosts(ids)
                 if (postsResponse.isSuccessful()) {
                     emit(Result.Success(postsResponse.requireData()))
@@ -58,7 +63,12 @@ class SearchRepositoryImpl @Inject constructor(
         try {
             val response = remoteDataSource.searchUser(query, page, size)
             if (response.isSuccessful()) {
-                val ids = response.requireData().requireData().map { it.id }
+                val userDocs = response.requireData().requireData()
+                if(userDocs.isEmpty()){
+                    emit(Result.Success(emptyList()))
+                    return@flow
+                }
+                val ids = userDocs.map { it.id }
                 val usersResponse = userRemoteDataSource.searchUserInfos(ids)
                 if (usersResponse.isSuccessful()) {
                     emit(Result.Success(usersResponse.requireData()))
@@ -83,6 +93,10 @@ class SearchRepositoryImpl @Inject constructor(
             val response = remoteDataSource.searchSpace(query, page, size)
             if (response.isSuccessful()) {
                 val spaceDocs = response.requireData().requireData()
+                if(spaceDocs.isEmpty()){
+                    emit(Result.Success(emptyList()))
+                    return@flow
+                }
                 val ids = spaceDocs.map { it.id }
                 val spaceResponse = spaceRemoteDataSource.searchSpaceInfos(ids)
                 if (spaceResponse.isSuccessful()) {
@@ -118,17 +132,43 @@ class SearchRepositoryImpl @Inject constructor(
         query: String,
         page: Int,
         size: Int?
-    ): Flow<Result<List<SearchCommentInfo>>> = flow {
+    ): Flow<Result<List<GeneralCommentInfo>>> = flow {
         emit(Result.Loading)
         try {
             val response = remoteDataSource.searchComment(query, page, size)
             if (response.isSuccessful()) {
-                val ids = response.requireData().requireData().map { it.id }
-                val commentResponse = commentRemoteDataSource.searchComments(ids)
-                if (commentResponse.isSuccessful()) {
-                    emit(Result.Success(commentResponse.requireData()))
+                val commentDocs = response.requireData().requireData()
+                if(commentDocs.isEmpty()){
+                    emit(Result.Success(emptyList()))
+                    return@flow
+                }
+                val ids = commentDocs.map { it.id }
+                val searchResponse = commentRemoteDataSource.searchComments(ids)
+                if (searchResponse.isSuccessful()) {
+                    val searchCommentInfos = searchResponse.requireData()
+                    val data = searchCommentInfos.mapIndexed { index, searchCommentInfo ->
+                        val commentDoc = commentDocs.find { it.id == searchCommentInfo.comment.id.toString() }
+                        if(commentDoc == null){
+                            throw Exception("Comment document not found for ID: ${searchCommentInfo.comment.id}")
+                            return@flow
+                        }else{
+                            GeneralCommentInfo(
+                                commentId = searchCommentInfo.comment.id,
+                                spaceId = commentDoc.spaceId,
+                                spaceName = searchCommentInfo.post.spaceName,
+                                postId = commentDoc.postId,
+                                postSubject = searchCommentInfo.post.subject,
+                                authorId = commentDoc.userId,
+                                authorName = searchCommentInfo.user.nickname,
+                                authorAvatar = searchCommentInfo.user.avatar,
+                                createdAt = searchCommentInfo.comment.createdAt,
+                                content = commentDoc.content
+                            )
+                        }
+                    }
+                    emit(Result.Success(data))
                 }else{
-                    emit(Result.Error(Exception(commentResponse.message)))
+                    emit(Result.Error(Exception(searchResponse.message)))
                 }
             } else {
                 emit(Result.Error(Exception(response.message)))
