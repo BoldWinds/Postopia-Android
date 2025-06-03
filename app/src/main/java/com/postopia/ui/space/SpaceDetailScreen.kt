@@ -49,7 +49,7 @@ fun SpaceDetailScreen(
     viewModel: SpaceDetailViewModel = hiltViewModel(),
     sharedViewModel : SharedViewModel,
     spaceId: Long,
-    navigateToPostDetail : (Long, Long, String) -> Unit
+    navigateToPostDetail : (Long, Long) -> Unit
 ) {
     LaunchedEffect(spaceId) {
         viewModel.handleEvent(SpaceDetailEvent.LoadSpaceDetail(spaceId))
@@ -125,7 +125,7 @@ fun SpaceDetailScreen(
             PostCard(
                 postItem = postItem,
                 onPostClick = { postId ->
-                    navigateToPostDetail(postId, postItem.spaceID, postItem.spaceName)
+                    navigateToPostDetail(postId, postItem.spaceID)
                 }
             )
         }

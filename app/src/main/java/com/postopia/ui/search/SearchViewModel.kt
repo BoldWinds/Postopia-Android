@@ -24,7 +24,7 @@ data class SearchUiState(
 )
 
 sealed class SearchEvent {
-    data class NewSearch(val searchType: SearchType, val query: String) : SearchEvent()
+    data class NewSearch(val query: String) : SearchEvent()
     object LoadMoreResults : SearchEvent()
 }
 
@@ -41,12 +41,11 @@ class SearchViewModel @Inject constructor(
             is SearchEvent.NewSearch -> {
                 _uiState.update {
                     it.copy(
-                        searchType = event.searchType,
                         query = event.query,
                         currentPage = 0,
                     )
                 }
-                performSearch(event.searchType, event.query)
+                performSearch(_uiState.value.searchType, event.query)
             }
             is SearchEvent.LoadMoreResults -> {
                 performSearch(_uiState.value.searchType, _uiState.value.query)

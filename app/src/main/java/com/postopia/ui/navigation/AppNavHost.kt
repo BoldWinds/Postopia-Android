@@ -39,8 +39,8 @@ fun AppNavHost(
         ) {
                 HomeScreen(
                     sharedViewModel = sharedViewModel,
-                    navigateToPostDetail = { postId, spaceId, spaceName ->
-                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                    navigateToPostDetail = { postId, spaceId ->
+                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
                     },
                 )
         }
@@ -81,8 +81,8 @@ fun AppNavHost(
         ) {
                 ProfileScreen(
                     sharedViewModel = sharedViewModel,
-                    navigateToPostDetail = { postId, spaceId, spaceName ->
-                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                    navigateToPostDetail = { postId, spaceId ->
+                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
                     },
                 )
         }
@@ -115,8 +115,8 @@ fun AppNavHost(
             SpaceDetailScreen(
                 spaceId = spaceId,
                 sharedViewModel = sharedViewModel,
-                navigateToPostDetail = { postId, spaceId, spaceName ->
-                    navController.navigate(Screen.PostDetail.createRoute(postId, spaceId, spaceName))
+                navigateToPostDetail = { postId, spaceId ->
+                    navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
                 },
             )
         }
@@ -124,21 +124,18 @@ fun AppNavHost(
         composable(
             route = Screen.PostDetail.route,
             arguments = listOf(
-                navArgument("postId") { type = NavType.LongType },
                 navArgument("spaceId") { type = NavType.LongType },
-                navArgument("spaceName") { type = NavType.StringType }
+                navArgument("postId") { type = NavType.LongType },
             ),
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) { backStackEntry ->
             val postId = backStackEntry.arguments?.getLong("postId") ?: -1L
             val spaceId = backStackEntry.arguments?.getLong("spaceId") ?: -1L
-            val spaceName = backStackEntry.arguments?.getString("spaceName") ?: ""
 
             PostDetailScreen(
                 postId = postId,
                 spaceId = spaceId,
-                spaceName = spaceName,
                 sharedViewModel = sharedViewModel
             )
         }
@@ -146,17 +143,14 @@ fun AppNavHost(
         composable(
             route = Screen.Search.route,
             arguments = listOf(
-                navArgument("searchType") { type = NavType.StringType },
                 navArgument("query") { type = NavType.StringType }
             ),
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) { backStackEntry ->
-            val searchType = backStackEntry.arguments?.getString("searchType") ?: ""
             val query = backStackEntry.arguments?.getString("query") ?: ""
 
             SearchScreen(
-                searchType = searchType,
                 query = query,
                 onBack = { navController.popBackStack() },
                 navigateToRoute = { route->

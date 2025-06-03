@@ -1,5 +1,6 @@
 package com.postopia.ui.search
 
+import android.R.attr.type
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,19 +18,16 @@ import com.postopia.ui.model.SearchType
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
-    searchType: String,
     query: String,
     onBack: () -> Unit,
     navigateToRoute: (String) -> Unit,
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val type = SearchType.fromString(searchType)
 
-    LaunchedEffect(searchType, query) {
+    LaunchedEffect(query) {
         viewModel.handleEvent(
             SearchEvent.NewSearch(
-                searchType = type,
                 query = query
             )
         )

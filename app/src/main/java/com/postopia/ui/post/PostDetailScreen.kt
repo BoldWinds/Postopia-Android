@@ -53,12 +53,11 @@ import com.postopia.ui.model.PostDetailUiModel
 fun PostDetailScreen(
     viewModel: PostDetailViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
-    postId : Long,
     spaceId : Long,
-    spaceName : String,
+    postId : Long,
 ) {
     LaunchedEffect(postId) {
-        viewModel.handleEvent(PostDetailEvent.LoadPostDetail(postId, spaceId, spaceName))
+        viewModel.handleEvent(PostDetailEvent.LoadPostDetail(postId, spaceId))
     }
 
     val uiState by viewModel.uiState.collectAsState()

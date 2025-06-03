@@ -246,7 +246,7 @@ fun PostList(
     isLoadingMore: Boolean = false,
     hasMore : Boolean = true,
     onLoadMore: () -> Unit = {},
-    onPostClick: (Long, Long, String) -> Unit,
+    onPostClick: (Long, Long) -> Unit,
 ) {
     val listState = rememberLazyListState()
 
@@ -271,7 +271,7 @@ fun PostList(
         ) { postItem ->
             PostCard(
                 postItem = postItem,
-                onPostClick = { onPostClick(postItem.postID, postItem.spaceID, postItem.spaceName) },
+                onPostClick = { onPostClick(postItem.postID, postItem.spaceID) },
             )
         }
 

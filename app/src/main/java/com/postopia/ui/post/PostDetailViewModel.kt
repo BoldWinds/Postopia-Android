@@ -11,6 +11,7 @@ import com.postopia.domain.mapper.VoteMapper.toUiModel
 import com.postopia.domain.repository.CommentRepository
 import com.postopia.domain.repository.OpinionRepository
 import com.postopia.domain.repository.PostRepository
+import com.postopia.domain.repository.SpaceRepository
 import com.postopia.ui.model.CommentTreeNodeUiModel
 import com.postopia.ui.model.PostDetailUiModel
 import com.postopia.ui.model.VoteDialogUiModel
@@ -38,7 +39,7 @@ data class PostDetailUiState(
 sealed class PostDetailEvent {
     object SnackbarMessageShown : PostDetailEvent()
     object LoadComments : PostDetailEvent()
-    data class LoadPostDetail(val postId: Long, val spaceId: Long, val spaceNam: String) : PostDetailEvent()
+    data class LoadPostDetail(val postId: Long, val spaceId: Long) : PostDetailEvent()
     data class UpdatePostOpinion(val postId: Long, val spaceId: Long, val isPositive : Boolean) : PostDetailEvent()
     data class CancelPostOpinion(val postId: Long,val isPositive : Boolean) : PostDetailEvent()
     data class UpdateCommentOpinion(val commentId: Long, val spaceId: Long ,val isPositive: Boolean) : PostDetailEvent()
@@ -54,6 +55,7 @@ sealed class PostDetailEvent {
 
 @HiltViewModel
 class PostDetailViewModel @Inject constructor(
+    private val spaceRepository: SpaceRepository,
     private val opinionRepository: OpinionRepository,
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
@@ -68,7 +70,7 @@ class PostDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(snackbarMessage = null) }
             }
             is PostDetailEvent.LoadPostDetail -> {
-                loadPostDetail(event.postId, event.spaceId, event.spaceNam)
+                loadPostDetail(event.postId, event.spaceId)
                 _uiState.update { it.copy(commentsPage = 0) }
                 loadComments(event.postId)
             }
@@ -105,18 +107,29 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
-    fun loadPostDetail(postId: Long, spaceId: Long, spaceName: String) {
+    fun loadPostDetail(postId: Long, spaceId: Long) {
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            postRepository.getPostByID(postId).collect { result->
+            spaceRepository.getSpace(spaceId).collect { result ->
                 when (result) {
                     is Result.Loading -> {}
                     is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                postDetail = result.data.toUiModel(spaceId, spaceName),
-                                vote = result.data.vote?.toUiModel(),
-                                isLoading = false)
+                        val spaceName = result.data.space.name
+                        postRepository.getPostByID(postId).collect { result->
+                            when (result) {
+                                is Result.Loading -> {}
+                                is Result.Success -> {
+                                    _uiState.update {
+                                        it.copy(
+                                            postDetail = result.data.toUiModel(spaceId, spaceName),
+                                            vote = result.data.vote?.toUiModel(),
+                                            isLoading = false)
+                                    }
+                                }
+                                is Result.Error -> {
+                                    _uiState.update { it.copy(isLoading = false, snackbarMessage = result.exception.message) }
+                                }
+                            }
                         }
                     }
                     is Result.Error -> {

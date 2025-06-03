@@ -43,7 +43,7 @@ import com.postopia.utils.DateUtils
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
-    navigateToPostDetail : (Long, Long, String) -> Unit,
+    navigateToPostDetail : (Long, Long) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -223,8 +223,8 @@ fun ProfileScreen(
                 isLoadingMore = uiState.isLoadingPosts,
                 hasMore = uiState.hasMorePosts,
                 onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMorePosts) },
-                onPostClick = { postID, spaceID, spaceName ->
-                    navigateToPostDetail(postID, spaceID, spaceName)
+                onPostClick = { postID, spaceID ->
+                    navigateToPostDetail(postID, spaceID)
                 }
             )
         }

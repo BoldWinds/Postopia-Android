@@ -7,15 +7,15 @@ sealed class Screen(val route: String) {
     object Message : Screen("message")
     object Profile : Screen("profile")
     object Auth : Screen("auth")
-    object SpaceDetail : Screen("space_detail/{spaceId}") {
-        fun createRoute(spaceId: Long) = "space_detail/$spaceId"
+    object SpaceDetail : Screen("space/{spaceId}") {
+        fun createRoute(spaceId: Long) = "space/$spaceId"
     }
-    object PostDetail : Screen("post_detail/{postId}/{spaceId}/{spaceName}") {
-        fun createRoute(postId: Long, spaceId: Long, spaceName: String) =
-            "post_detail/$postId/$spaceId/$spaceName"
+    object PostDetail : Screen("space/{spaceId}/post/{postId}") {
+        fun createRoute(postId: Long, spaceId: Long) =
+            "space/$spaceId/post/$postId"
     }
-    object Search : Screen("search/{searchType}/{query}") {
-        fun createRoute(searchType: String, query: String) =
-            "search/$searchType/$query"
+    object Search : Screen("search/{query}") {
+        fun createRoute(query: String) =
+            "search/$query"
     }
 }
