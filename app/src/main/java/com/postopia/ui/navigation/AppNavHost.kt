@@ -17,6 +17,7 @@ import com.postopia.ui.home.HomeScreen
 import com.postopia.ui.message.MessageScreen
 import com.postopia.ui.post.PostDetailScreen
 import com.postopia.ui.profile.ProfileScreen
+import com.postopia.ui.search.SearchScreen
 import com.postopia.ui.space.SpaceDetailScreen
 import com.postopia.ui.space.SpaceScreen
 
@@ -139,6 +140,30 @@ fun AppNavHost(
                 spaceId = spaceId,
                 spaceName = spaceName,
                 sharedViewModel = sharedViewModel
+            )
+        }
+
+        composable(
+            route = Screen.Search.route,
+            arguments = listOf(
+                navArgument("searchType") { type = NavType.StringType },
+                navArgument("query") { type = NavType.StringType }
+            ),
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) { backStackEntry ->
+            val searchType = backStackEntry.arguments?.getString("searchType") ?: ""
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+
+            SearchScreen(
+                searchType = searchType,
+                query = query,
+                onBack = { navController.popBackStack() },
+                navigateToRoute = { route->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                    }
+                }
             )
         }
     }

@@ -12,6 +12,7 @@ data class UserInfo(
     val postCount : Long = 0 ,
     val commentCount: Long = 0,
     val credit : Long = 0,
+    val createdAt: String,
 )
 
 @JsonClass(generateAdapter = true)

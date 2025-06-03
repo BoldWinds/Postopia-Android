@@ -3,7 +3,8 @@ package com.postopia.data.repository
 import com.postopia.data.model.FeedPostInfo
 import com.postopia.data.model.Result
 import com.postopia.data.model.SearchCommentInfo
-import com.postopia.data.model.SearchSpaceInfo
+import com.postopia.data.model.SpaceInfo
+import com.postopia.data.model.SpacePart
 import com.postopia.data.model.UserInfo
 import com.postopia.data.remote.CommentRemoteDataSource
 import com.postopia.data.remote.PostRemoteDataSource
@@ -76,23 +77,39 @@ class SearchRepositoryImpl @Inject constructor(
         query: String,
         page: Int,
         size: Int?
-    ): Flow<Result<List<SearchSpaceInfo>>> = flow {
+    ): Flow<Result<List<SpaceInfo>>> = flow {
         emit(Result.Loading)
         try {
             val response = remoteDataSource.searchSpace(query, page, size)
             if (response.isSuccessful()) {
-                val ids = response.requireData().requireData().map { it.id }
+                val spaceDocs = response.requireData().requireData()
+                val ids = spaceDocs.map { it.id }
                 val spaceResponse = spaceRemoteDataSource.searchSpaceInfos(ids)
                 if (spaceResponse.isSuccessful()) {
-                    emit(Result.Success(spaceResponse.requireData()))
-                }else{
+                    val searchSpaceInfos = spaceResponse.requireData()
+                    val spaceInfos = searchSpaceInfos.map { searchSpaceInfo ->
+                        val spaceDoc = spaceDocs.find { it.id.toLong() == searchSpaceInfo.space.id }
+                        SpaceInfo(
+                            space = SpacePart(
+                                id = searchSpaceInfo.space.id,
+                                name = spaceDoc!!.name,
+                                avatar = searchSpaceInfo.space.avatar,
+                                createdAt = searchSpaceInfo.space.createdAt,
+                                description = spaceDoc.description,
+                                memberCount = searchSpaceInfo.space.memberCount,
+                                postCount = searchSpaceInfo.space.postCount
+                            ),
+                            isMember = searchSpaceInfo.isMember
+                        )
+                    }
+                    emit(Result.Success(spaceInfos))
+                } else {
                     emit(Result.Error(Exception(spaceResponse.message)))
                 }
             } else {
                 emit(Result.Error(Exception(response.message)))
             }
-
-        }catch (e : Exception){
+        } catch (e: Exception) {
             emit(Result.Error(e))
         }
     }
