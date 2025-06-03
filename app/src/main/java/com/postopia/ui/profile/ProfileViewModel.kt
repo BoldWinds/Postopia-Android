@@ -18,7 +18,6 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val isLoading: Boolean = true,
-    val selectedTab : Int = 0,
     val userDetail: ProfileUiModel = ProfileUiModel.default(),
     val snackbarMessage: String? = null,
     val userPosts : List<PostCardInfo> = emptyList(),
@@ -28,7 +27,6 @@ data class ProfileUiState(
 )
 
 sealed class ProfileEvent {
-    data class ChangeTab(val tabIndex: Int) : ProfileEvent()
     object SnackbarMessageShown : ProfileEvent()
     object LoadMorePosts : ProfileEvent()
 }
@@ -51,11 +49,8 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.SnackbarMessageShown -> {
                 _uiState.update { it.copy(snackbarMessage = null) } // Clear snackbar message
             }
-            is ProfileEvent.ChangeTab -> {
-                _uiState.update { it.copy(selectedTab = event.tabIndex) }
-            }
             is ProfileEvent.LoadMorePosts -> {
-
+                loadUserPosts()
             }
         }
     }
