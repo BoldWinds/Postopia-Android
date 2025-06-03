@@ -29,10 +29,10 @@ interface SpaceRemoteDataSource {
     suspend fun getSpaceInfo(@Query("id") id: Int) : ApiResponse<SpaceInfo>
 
     @GET("space/search")
-    suspend fun searchSpaceInfos(@Query("ids") ids: List<Int>) : ApiResponse<List<SearchSpaceInfo>>
+    suspend fun searchSpaceInfos(@Query("ids") ids: List<String>) : ApiResponse<List<SearchSpaceInfo>>
 
     @GET("space/avatars")
-    suspend fun getSpaceAvatars(@Query("ids") ids: List<Int>) : ApiResponse<List<SpaceAvatar>>
+    suspend fun getSpaceAvatars(@Query("ids") ids: List<String>) : ApiResponse<List<SpaceAvatar>>
 
     @GET("space/popular")
     suspend fun getPopularSpaces(

@@ -6,6 +6,7 @@ import com.postopia.data.remote.CommentRemoteDataSource
 import com.postopia.data.remote.MessageRemoteDataSource
 import com.postopia.data.remote.OpinionRemoteDataSource
 import com.postopia.data.remote.PostRemoteDataSource
+import com.postopia.data.remote.SearchRemoteDataSource
 import com.postopia.data.remote.SpaceRemoteDataSource
 import com.postopia.data.remote.UserRemoteDataSource
 import com.postopia.data.remote.VoteRemoteDataSource
@@ -108,6 +109,12 @@ object NetworkModule {
     @Singleton
     fun provideMessageRemoteDataSource(retrofit: Retrofit): MessageRemoteDataSource {
         return retrofit.create(MessageRemoteDataSource::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchRemoteDataSource(retrofit: Retrofit): SearchRemoteDataSource {
+        return retrofit.create(SearchRemoteDataSource::class.java)
     }
 }
 
