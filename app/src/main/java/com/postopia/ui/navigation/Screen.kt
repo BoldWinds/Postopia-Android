@@ -11,7 +11,7 @@ sealed class Screen(val route: String) {
         fun createRoute(spaceId: Long) = "space/$spaceId"
     }
     object PostDetail : Screen("space/{spaceId}/post/{postId}") {
-        fun createRoute(postId: Long, spaceId: Long) =
+        fun createRoute(spaceId: Long, postId: Long) =
             "space/$spaceId/post/$postId"
     }
     object Search : Screen("search/{query}") {

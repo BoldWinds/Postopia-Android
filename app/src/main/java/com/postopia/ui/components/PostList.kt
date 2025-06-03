@@ -271,7 +271,7 @@ fun PostList(
         ) { postItem ->
             PostCard(
                 postItem = postItem,
-                onPostClick = { onPostClick(postItem.postID, postItem.spaceID) },
+                onPostClick = { onPostClick(postItem.spaceID, postItem.postID) },
             )
         }
 

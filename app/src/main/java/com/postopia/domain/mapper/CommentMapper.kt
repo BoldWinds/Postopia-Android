@@ -1,6 +1,8 @@
 package com.postopia.domain.mapper
 
+import com.postopia.data.model.GeneralCommentInfo
 import com.postopia.data.model.RecursiveCommentInfo
+import com.postopia.ui.model.CommentCardUiModel
 import com.postopia.ui.model.CommentTreeNodeUiModel
 
 object CommentMapper {
@@ -19,6 +21,21 @@ object CommentMapper {
             isPinned = comment.comment.isPined,
             children = children.map { it.toUiModel(depth + 1) },
             depth = depth,
+        )
+    }
+
+    fun GeneralCommentInfo.toUiModel(): CommentCardUiModel {
+        return CommentCardUiModel(
+            commentId = this.commentId,
+            spaceId = this.spaceId,
+            spaceName = this.spaceName,
+            postId = this.postId,
+            postSubject = this.postSubject,
+            authorId = this.authorId,
+            authorName = this.authorName,
+            authorAvatar = this.authorAvatar,
+            createdAt = this.createdAt,
+            content = this.content,
         )
     }
 }

@@ -24,6 +24,7 @@ data class SpaceCommentPart (
     val content: String,
     val negativeCount: Long,
     val positiveCount: Long,
+    val createdAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -70,4 +71,17 @@ data class SearchCommentInfo (
 data class RecursiveCommentInfo(
     val comment : CommentInfo,
     val children : List<RecursiveCommentInfo>,
+)
+
+data class GeneralCommentInfo(
+    val commentId: Long,
+    val spaceId: Long,
+    val spaceName: String,
+    val postId: Long,
+    val postSubject: String,
+    val authorId: Long,
+    val authorName: String,
+    val authorAvatar: String,
+    val createdAt: String,
+    val content: String,
 )

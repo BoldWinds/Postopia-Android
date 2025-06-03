@@ -125,7 +125,7 @@ fun SpaceDetailScreen(
             PostCard(
                 postItem = postItem,
                 onPostClick = { postId ->
-                    navigateToPostDetail(postId, postItem.spaceID)
+                    navigateToPostDetail(postItem.spaceID, postId)
                 }
             )
         }

@@ -37,8 +37,8 @@ fun HomeScreen(
         onLoadMore = {
             viewModel.handleEvent(HomeEvent.LoadMorePosts)
         },
-        onPostClick = { postID, spaceID ->
-            navigateToPostDetail(postID, spaceID)
+        onPostClick = { spaceId, postId ->
+            navigateToPostDetail(spaceId, postId)
         },
     )
 }

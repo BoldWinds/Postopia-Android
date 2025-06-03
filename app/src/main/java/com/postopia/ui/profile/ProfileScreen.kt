@@ -13,13 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.PostList
+import com.postopia.ui.components.SingleCommentList
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -59,6 +61,8 @@ fun ProfileScreen(
     }
 
     val userDetail = uiState.userDetail
+    val selectedTab = uiState.selectedTab
+    val tabs = listOf("发帖", "评论", "个人介绍")
 
     Column(
         modifier = Modifier
@@ -107,7 +111,7 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = DateUtils.formatTimestampFromString(userDetail.createdAt),
+                            text = DateUtils.formatDate(userDetail.createdAt),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
@@ -171,28 +175,6 @@ fun ProfileScreen(
                     )
                 }
             }
-
-            if (userDetail.introduction.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = userDetail.introduction.toString(),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -204,29 +186,73 @@ fun ProfileScreen(
                 .background(MaterialTheme.colorScheme.surface)
                 .weight(1f) // 让Tab内容区域占用剩余空间
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = MaterialTheme.colorScheme.primary,
+                        height = 3.dp
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick = {
+                            viewModel.handleEvent(ProfileEvent.ChangeTab(index)) },
+                        text = {
+                            Text(
+                                text = title,
+                                fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selectedTab == index)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    )
+                }
+            }
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "发帖",
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            // Content based on selected tab
-            PostList(
-                posts = uiState.userPosts,
-                isLoadingMore = uiState.isLoadingPosts,
-                hasMore = uiState.hasMorePosts,
-                onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMorePosts) },
-                onPostClick = { postID, spaceID ->
-                    navigateToPostDetail(postID, spaceID)
+                when (selectedTab) {
+                    0 -> PostList(
+                        posts = uiState.userPosts,
+                        isLoadingMore = uiState.isLoadingPosts,
+                        hasMore = uiState.hasMorePosts,
+                        onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMorePosts) },
+                        onPostClick = { spaceId, postId ->
+                            navigateToPostDetail(spaceId, postId)
+                        }
+                    )
+                    1 -> SingleCommentList(
+                        comments = uiState.userComments,
+                        isLoadingMore = uiState.isLoadingComments,
+                        hasMore = uiState.hasMoreComments,
+                        onLoadMore = { viewModel.handleEvent(ProfileEvent.LoadMoreComments) },
+                        onCommentClick = { spaceId, postId ->
+                            navigateToPostDetail(spaceId, postId)
+                        }
+                    )
+                    2 -> Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = if(userDetail.introduction.toString().isNotEmpty()) userDetail.introduction.toString() else "该用户很懒，没有填写个人介绍哦",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                 }
-            )
+            }
         }
     }
 }

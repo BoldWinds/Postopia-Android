@@ -39,8 +39,8 @@ fun AppNavHost(
         ) {
                 HomeScreen(
                     sharedViewModel = sharedViewModel,
-                    navigateToPostDetail = { postId, spaceId ->
-                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
+                    navigateToPostDetail = { spaceId, postId ->
+                        navController.navigate(Screen.PostDetail.createRoute(spaceId, postId))
                     },
                 )
         }
@@ -81,8 +81,8 @@ fun AppNavHost(
         ) {
                 ProfileScreen(
                     sharedViewModel = sharedViewModel,
-                    navigateToPostDetail = { postId, spaceId ->
-                        navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
+                    navigateToPostDetail = { spaceId, postId ->
+                        navController.navigate(Screen.PostDetail.createRoute(spaceId, postId))
                     },
                 )
         }
@@ -115,8 +115,8 @@ fun AppNavHost(
             SpaceDetailScreen(
                 spaceId = spaceId,
                 sharedViewModel = sharedViewModel,
-                navigateToPostDetail = { postId, spaceId ->
-                    navController.navigate(Screen.PostDetail.createRoute(postId, spaceId))
+                navigateToPostDetail = { spaceId, postId ->
+                    navController.navigate(Screen.PostDetail.createRoute(spaceId, postId))
                 },
             )
         }
