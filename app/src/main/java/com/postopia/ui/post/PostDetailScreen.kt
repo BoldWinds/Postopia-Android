@@ -3,7 +3,6 @@ package com.postopia.ui.post
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,11 +41,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -299,67 +301,83 @@ private fun PostVoteMenu(
     onVote: (VoteType) -> Unit
 ){
     var expanded by remember { mutableStateOf(false) }
+    var cardWidth by remember { mutableStateOf(0) }
+    val density = LocalDensity.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { expanded = true },
+            .clickable { expanded = true }
+            .onSizeChanged { size -> cardWidth = size.width },
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             MaterialTheme.colorScheme.surfaceVariant,
         )
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            contentAlignment = Alignment.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "发起投票",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
-                maxLines = 1, // 限制为单行文本
-                overflow = TextOverflow.Ellipsis // 超出显示范围时显示省略号
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+
+            Spacer(modifier = Modifier.width(4.dp))
 
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
                 contentDescription = "展开",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                // 帖子相关的选项
-                if(isArchived){
-                    DropdownMenuItem(
-                        text = { Text(VoteType.UNARCHIVE_POST.toString()) },
-                        onClick = {
-                            onVote(VoteType.UNARCHIVE_POST)
-                            expanded = false
-                        }
-                    )
-                }else{
-                    DropdownMenuItem(
-                        text = { Text(VoteType.ARCHIVE_POST.toString()) },
-                        onClick = {
-                            onVote(VoteType.ARCHIVE_POST)
-                            expanded = false
-                        }
-                    )
-                }
+        // 计算菜单的偏移量，使其居中显示
+        val dropdownOffset = with(density) {
+            DpOffset(
+                x = (cardWidth / 2).toDp(), // 菜单宽度约为150dp，所以偏移一半
+                y = 0.dp
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            offset = dropdownOffset
+        ) {
+            // 帖子相关的选项
+            if(isArchived){
                 DropdownMenuItem(
-                    text = { Text(VoteType.DELETE_POST.toString()) },
+                    text = { Text(VoteType.UNARCHIVE_POST.toString()) },
                     onClick = {
-                        onVote(VoteType.DELETE_POST)
+                        onVote(VoteType.UNARCHIVE_POST)
+                        expanded = false
+                    }
+                )
+            }else{
+                DropdownMenuItem(
+                    text = { Text(VoteType.ARCHIVE_POST.toString()) },
+                    onClick = {
+                        onVote(VoteType.ARCHIVE_POST)
                         expanded = false
                     }
                 )
             }
+            DropdownMenuItem(
+                text = { Text(VoteType.DELETE_POST.toString()) },
+                onClick = {
+                    onVote(VoteType.DELETE_POST)
+                    expanded = false
+                }
+            )
         }
     }
 }
