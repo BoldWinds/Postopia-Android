@@ -72,6 +72,7 @@ fun AppNavHost(
         ) {
                 MessageScreen(
                     sharedViewModel = sharedViewModel,
+                    onNavigate = {route-> navController.navigate(route)}
                 )
         }
         composable(

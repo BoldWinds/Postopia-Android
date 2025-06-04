@@ -43,18 +43,22 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.model.MessageCardUiModel
+import com.postopia.utils.DateUtils
 
 @Composable
 fun MessageScreen(
     viewModel: MessageViewModel = hiltViewModel(),
     sharedViewModel: SharedViewModel,
+    onNavigate: (String)-> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -215,7 +219,8 @@ fun MessageScreen(
                             },
                             onLongClick = { messageId ->
                                 viewModel.handleEvent(MessageEvent.EnterSelectionMode(messageId))
-                            }
+                            },
+                            onNavigate = onNavigate,
                         )
                     }
 
@@ -246,6 +251,7 @@ fun MessageCard(
     onDelete: (Long) -> Unit,
     onSelect: (Long, Boolean) -> Unit,
     onLongClick: (Long) -> Unit,
+    onNavigate: (String) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -253,11 +259,8 @@ fun MessageCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .combinedClickable(
                 onClick = {
-                    if (isSelectionMode) {
-                        onSelect(message.id, !isSelected)
-                    } else if (!message.isRead) {
-                        onMarkAsRead(message.id)
-                    }
+                    if(!message.isRead) onMarkAsRead(message.id)
+                    if(message.route.isNotEmpty()) onNavigate(message.route)
                 },
                 onLongClick = {
                     if (!isSelectionMode) {
@@ -312,11 +315,11 @@ fun MessageCard(
             ) {
                 // 消息内容
                 Text(
-                    text = message.content,
+                    text = AnnotatedString.fromHtml(message.content),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = if (message.isRead) FontWeight.Normal else FontWeight.Medium,
-                    maxLines = 3,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
@@ -324,7 +327,7 @@ fun MessageCard(
 
                 // 时间戳
                 Text(
-                    text = message.createdAt,
+                    text = DateUtils.formatDate(message.createdAt),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp

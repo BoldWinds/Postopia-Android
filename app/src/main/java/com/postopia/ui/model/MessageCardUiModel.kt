@@ -5,4 +5,5 @@ data class MessageCardUiModel(
     val content: String,
     val isRead : Boolean,
     val createdAt: String,
+    val route: String,
 )
