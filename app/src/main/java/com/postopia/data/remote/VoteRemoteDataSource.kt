@@ -6,12 +6,13 @@ import com.postopia.data.remote.dto.VoteCommentRequest
 import com.postopia.data.remote.dto.VotePostRequest
 import com.postopia.data.remote.dto.VoteUserRequest
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface VoteRemoteDataSource {
 
-    @POST("/vote/space")
+    @GET("/vote/space")
     suspend fun getSpaceVote(@Query ("spaceId") spaceId: Int): ApiResponse<List<SpaceVoteInfo>>
 
     @POST("/vote/comment-delete")

@@ -217,7 +217,7 @@ fun SpaceDetailTopBar(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = formatMemberCount(uiInfo.memberCount),
+                                text = "${uiInfo.memberCount}位成员",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -230,7 +230,7 @@ fun SpaceDetailTopBar(
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Text(
-                            text = "Join",
+                            text = if (uiInfo.isMember) "退出" else "加入",
                             style = MaterialTheme.typography.labelMedium
                         )
                     }
@@ -274,7 +274,7 @@ fun SpaceDetailInfo(uiInfo: SpaceDetailUiModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatisticItem(
-                label = "Members",
+                label = "成员",
                 value = uiInfo.memberCount.toString(),
                 modifier = Modifier.weight(1f)
             )
@@ -285,7 +285,7 @@ fun SpaceDetailInfo(uiInfo: SpaceDetailUiModel) {
                     .background(MaterialTheme.colorScheme.outline)
             )
             StatisticItem(
-                label = "Posts",
+                label = "帖子",
                 value = uiInfo.postCount.toString(),
                 modifier = Modifier.weight(1f)
             )
@@ -296,8 +296,8 @@ fun SpaceDetailInfo(uiInfo: SpaceDetailUiModel) {
                     .background(MaterialTheme.colorScheme.outline)
             )
             StatisticItem(
-                label = "Created",
-                value = DateUtils.formatDate(uiInfo.createdAt),
+                label = "创建于",
+                value = DateUtils.absoluteTime(uiInfo.createdAt),
                 modifier = Modifier.weight(1f)
             )
         }

@@ -49,7 +49,7 @@ import com.postopia.ui.model.PostCardInfo
 import com.postopia.ui.model.ProfileUiModel
 import com.postopia.ui.model.SearchType
 import com.postopia.ui.navigation.Screen
-import com.postopia.ui.space.SpaceCard
+import com.postopia.ui.components.SpaceCard
 import com.postopia.utils.DateUtils
 
 @Composable

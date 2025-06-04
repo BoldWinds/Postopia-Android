@@ -116,7 +116,7 @@ fun AuthScreen(
 
             // 认证按钮
             AuthButton(
-                text = if(uiState.isRegister) "注册" else "登陆",
+                text = if(uiState.isRegister) "注册" else "登录",
                 isLoading = uiState.isLoading,
                 onClick = {
                     if(uiState.isRegister){

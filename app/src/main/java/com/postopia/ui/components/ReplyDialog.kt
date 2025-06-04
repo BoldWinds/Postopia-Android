@@ -32,6 +32,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.postopia.utils.DateUtils
 
 @Composable
 fun ReplyDialog(
@@ -132,7 +133,7 @@ fun ReplyDialog(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                                 Text(
-                                    text = " • $replyToTime",
+                                    text = " • ${DateUtils.formatDate(replyToTime)}",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )

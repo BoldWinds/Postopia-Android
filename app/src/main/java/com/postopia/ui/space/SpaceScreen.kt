@@ -1,14 +1,11 @@
 package com.postopia.ui.space
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,11 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,17 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import com.postopia.R
 import com.postopia.data.model.SpaceInfo
-import com.postopia.data.model.SpacePart
 import com.postopia.ui.SharedViewModel
+import com.postopia.ui.components.SpaceCard
 
 @Composable
 fun SpaceScreen(
@@ -77,7 +63,7 @@ fun SpaceScreen(
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Recommended for you",
+                text = "热门空间",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -101,7 +87,7 @@ fun SpaceScreen(
         // 用户空间部分
         item {
             Text(
-                text = "Your Spaces",
+                text = "你的空间",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -124,7 +110,7 @@ fun SpaceScreen(
         } else {
             item {
                 Text(
-                    text = "You haven't joined any spaces yet.",
+                    text = "您还没有加入任何空间，快去探索吧！",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -210,107 +196,3 @@ fun SpaceHorizontalList(
         }
     }
 }
-
-@Composable
-fun SpaceCard(
-    space: SpacePart,
-    isMember: Boolean = true,
-    onSpaceClick: () -> Unit = {},
-    joinOrLeave: () -> Unit = {}
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSpaceClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 头像
-                AsyncImage(
-                    model = space.avatar,
-                    contentDescription = "${space.name} avatar",
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = R.drawable.ic_launcher_background), // TODO: 添加占位符图片
-                    error = painterResource(id = R.drawable.ic_launcher_background) // TODO: 添加错误图片
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // 空间信息
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = space.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Text(
-                        text = formatMemberCount(space.memberCount),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-
-                // 加入按钮
-                Button(
-                    onClick = joinOrLeave,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isMember)
-                            MaterialTheme.colorScheme.surfaceVariant
-                        else
-                            MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.height(36.dp)
-                ) {
-                    Text(
-                        text = if (isMember) "Joined" else "Join",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isMember)
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        else
-                            MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 空间描述
-            Text(
-                text = space.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-fun formatMemberCount(count: Long): String {
-    return when {
-        count >= 1_000_000 -> "${(count / 1_000_000.0).format(1)}m members"
-        count >= 1_000 -> "${(count / 1_000.0).format(1)}k members"
-        else -> "$count members"
-    }
-}
-fun Double.format(digits: Int) = "%.${digits}f".format(this).trimEnd('0').trimEnd('.')
-

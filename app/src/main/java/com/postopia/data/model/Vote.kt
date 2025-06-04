@@ -60,13 +60,31 @@ data class SpaceVoteInfo (
 )
 
 enum class VoteType {
-    PIN_COMMENT,
-    UNPIN_COMMENT,
-    DELETE_COMMENT,
-    ARCHIVE_POST,
-    UNARCHIVE_POST,
-    DELETE_POST,
-    UPDATE_SPACE,
-    EXPEL_USER,
-    MUTE_USER
+    PIN_COMMENT {
+        override fun toString(): String = "置顶评论"
+    },
+    UNPIN_COMMENT {
+        override fun toString(): String = "取消置顶评论"
+    },
+    DELETE_COMMENT {
+        override fun toString(): String = "删除评论"
+    },
+    ARCHIVE_POST {
+        override fun toString(): String = "归档帖子"
+    },
+    UNARCHIVE_POST {
+        override fun toString(): String = "取消归档帖子"
+    },
+    DELETE_POST {
+        override fun toString(): String = "删除帖子"
+    },
+    UPDATE_SPACE {
+        override fun toString(): String = "更新空间"
+    },
+    EXPEL_USER {
+        override fun toString(): String = "驱逐用户"
+    },
+    MUTE_USER {
+        override fun toString(): String = "禁言用户"
+    }
 }

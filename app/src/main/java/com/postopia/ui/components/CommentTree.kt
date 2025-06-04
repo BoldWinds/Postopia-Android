@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.postopia.ui.model.CommentTreeNodeUiModel
 import com.postopia.ui.model.VoteDialogUiModel
+import com.postopia.utils.DateUtils
 
 
 @Composable
@@ -49,7 +50,12 @@ fun CommentTree(
     onCancelOpinion: (Long, Boolean) -> Unit,
     onReplyClick: (Long) -> Unit
 ) {
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
         CommentItem(
             comment = comment,
             vote = voteMap[comment.id],
@@ -63,10 +69,10 @@ fun CommentTree(
         // Render children with indentation
         if (comment.children.isNotEmpty()) {
             Column(
-                modifier = Modifier.padding(start = (16 + comment.depth * 12).dp)
+                modifier = Modifier.padding(start = (comment.depth * 12).dp)
             ) {
                 comment.children.forEach { childComment ->
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     CommentTree(
                         comment = childComment,
                         voteMap = voteMap,
@@ -98,10 +104,7 @@ private fun CommentItem(
             .fillMaxWidth()
             .clickable { onCommentClick(comment) },
         colors = CardDefaults.cardColors(
-            containerColor = if (comment.depth == 0)
-                MaterialTheme.colorScheme.surface
-            else
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (comment.depth == 0) 2.dp else 1.dp
@@ -155,7 +158,7 @@ private fun CommentItem(
                         }
 
                         Text(
-                            text = "@${comment.username}",
+                            text = "u/${comment.username}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -169,7 +172,7 @@ private fun CommentItem(
                 }
 
                 Text(
-                    text = comment.createdAt,
+                    text = DateUtils.formatDate(comment.createdAt),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -207,31 +210,22 @@ private fun CommentItem(
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Reply button
+                    // 回复
                     TextButton(
                         onClick = { onReplyClick(comment.id) },
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Reply,
+                            imageVector = Icons.Default.ChatBubbleOutline,
                             contentDescription = "Reply",
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Reply",
+                            text = comment.children.size.toString(),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                }
-
-                // Show reply count if has children
-                if (comment.children.isNotEmpty()) {
-                    Text(
-                        text = "${comment.children.size} ${if (comment.children.size == 1) "reply" else "replies"}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }

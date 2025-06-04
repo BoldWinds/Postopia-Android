@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,6 +49,7 @@ import com.postopia.ui.components.LikeDislikeBar
 import com.postopia.ui.components.ReplyDialog
 import com.postopia.ui.components.VoteCard
 import com.postopia.ui.model.PostDetailUiModel
+import com.postopia.utils.DateUtils
 
 @Composable
 fun PostDetailScreen(
@@ -108,6 +110,9 @@ fun PostDetailScreen(
                     onVote = { voteId, isPositive ->
                         viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive)) },)
             }
+        }
+        item {
+            HorizontalDivider(color = MaterialTheme.colorScheme.background)
         }
         items(
             items = uiState.comments,
@@ -179,12 +184,12 @@ fun PostContent(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = uiInfo.nickname,
+                        text = "u/${uiInfo.nickname}",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                     )
                     Text(
-                        text = uiInfo.spaceName,
+                        text = "r/${uiInfo.spaceName}",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium,
                     )
@@ -220,15 +225,6 @@ fun PostContent(
                 lineHeight = 20.sp
             )
 
-            Text(
-                text = uiInfo.createdAt,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 20.sp
-            )
-
-            //Spacer(modifier = Modifier.height(16.dp))
-
             // 操作按钮行
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -250,8 +246,7 @@ fun PostContent(
                 )
                 // 评论按钮
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { onReplyClick() }
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
@@ -266,8 +261,13 @@ fun PostContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                // 空占位符保持布局平衡
-                Spacer(modifier = Modifier.width(1.dp))
+
+                Text(
+                    text = DateUtils.formatDate(uiInfo.createdAt),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 20.sp
+                )
             }
         }
     }

@@ -37,6 +37,7 @@ import coil.compose.AsyncImage
 import com.postopia.data.model.OpinionStatus
 import com.postopia.data.model.VoteType
 import com.postopia.ui.model.VoteDialogUiModel
+import com.postopia.utils.DateUtils
 
 @Composable
 fun VoteDialog(
@@ -93,7 +94,7 @@ fun VoteDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = voteModel.initiatorName,
+                            text = "u/${voteModel.initiatorName}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -129,7 +130,7 @@ fun VoteDialog(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = relatedUserName,
+                                    text = "u/$relatedUserName",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -169,7 +170,7 @@ fun VoteDialog(
                         .padding(bottom = 4.dp)
                 )
                 Text(
-                    text = getVoteTypeDisplayName(voteModel.voteType),
+                    text = voteModel.voteType.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
@@ -191,7 +192,7 @@ fun VoteDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = voteModel.startAt,
+                            text = DateUtils.formatRelativeTime(voteModel.startAt),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -204,7 +205,7 @@ fun VoteDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = voteModel.endAt,
+                            text = DateUtils.formatRelativeTime(voteModel.endAt),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -395,18 +396,3 @@ fun VoteProgressBar(
         }
     }
 }
-
-private fun getVoteTypeDisplayName(voteType: VoteType): String {
-    return when (voteType) {
-        VoteType.PIN_COMMENT -> "置顶评论"
-        VoteType.UNPIN_COMMENT -> "取消置顶评论"
-        VoteType.DELETE_COMMENT -> "删除评论"
-        VoteType.ARCHIVE_POST -> "归档帖子"
-        VoteType.UNARCHIVE_POST -> "取消归档帖子"
-        VoteType.DELETE_POST -> "删除帖子"
-        VoteType.UPDATE_SPACE -> "更新空间"
-        VoteType.EXPEL_USER -> "驱逐用户"
-        VoteType.MUTE_USER -> "禁言用户"
-    }
-}
-
