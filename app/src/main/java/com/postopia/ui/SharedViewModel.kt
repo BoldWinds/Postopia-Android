@@ -14,12 +14,24 @@ class SharedViewModel @Inject constructor() : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _navigateToAuth = MutableStateFlow(false)
+    val navigateToAuth = _navigateToAuth.asStateFlow()
+
     fun showSnackbar(message: String) {
-        _snackbarMessage.value = message
+        if (message.contains("HTTP 401 Unauthorized")) {
+            _navigateToAuth.value = true
+            _snackbarMessage.value = "请登录"
+        }else{
+            _snackbarMessage.value = message
+        }
     }
 
     fun snackbarMessageShown() {
         _snackbarMessage.value = null
+    }
+
+    fun onAuthNavigated() {
+        _navigateToAuth.value = false
     }
 
     fun setLoading(isLoading: Boolean) {

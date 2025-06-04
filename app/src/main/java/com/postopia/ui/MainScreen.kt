@@ -58,6 +58,16 @@ fun MainScreen(
         }
     }
 
+    // 监听导航到认证界面的事件
+    LaunchedEffect(sharedViewModel.navigateToAuth) {
+        sharedViewModel.navigateToAuth.collect { shouldNavigate ->
+            if (shouldNavigate) {
+                navController.navigate(Screen.Auth.route)
+                sharedViewModel.onAuthNavigated()
+            }
+        }
+    }
+
     val isLoading by sharedViewModel.isLoading.collectAsState()
 
     // TODO 优化topBar
@@ -74,7 +84,10 @@ fun MainScreen(
             }},
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            if(shouldShowBars) TopBar({}, {query->navController.navigate(Screen.Search.createRoute(query))}, {navController.navigate("auth")})
+            if(shouldShowBars) TopBar(
+                route = navController.currentDestination?.route ?: "",
+                {}, {query->navController.navigate(Screen.Search.createRoute(query))}, {navController.navigate("auth")}
+            )
         },
         bottomBar = {
             if(shouldShowBars) BottomNavigationBar(items = bottomNavItems, navController = navController)

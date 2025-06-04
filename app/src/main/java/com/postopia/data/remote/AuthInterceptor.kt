@@ -41,7 +41,7 @@ class AuthInterceptor @Inject constructor(
 
     private fun shouldSkipAuth(request: Request): Boolean {
         val url = request.url.toString()
-        return url.contains("/user/auth/")
+        return url.contains("/auth")
     }
 }
 
