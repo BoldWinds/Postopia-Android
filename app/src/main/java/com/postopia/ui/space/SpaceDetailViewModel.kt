@@ -27,7 +27,7 @@ data class SpaceDetailUiState(
     val spaceInfo : SpaceDetailUiModel = SpaceDetailUiModel.default(),
     val spacePosts : List<PostCardInfo> = emptyList<PostCardInfo>(),
     val isLoadingMore : Boolean = false,
-    val hasMore : Boolean = true,
+    val hasMore : Boolean = false,
     val page : Int = 0,
     val votes : List<VoteDialogUiModel> = emptyList<VoteDialogUiModel>()
 )
@@ -100,7 +100,7 @@ class SpaceDetailViewModel @Inject constructor(
                                 currentState.copy(
                                     spacePosts = result.data.map { it.toPostCardInfo(spaceId, currentState.spaceInfo.name) },
                                     page = 0,
-                                    hasMore = result.data.isNotEmpty()
+                                    hasMore = result.data.size >= 20,
                                 )
                             }
                         }
@@ -150,7 +150,7 @@ class SpaceDetailViewModel @Inject constructor(
                             currentState.copy(
                                 spacePosts = currentState.spacePosts + result.data.map { it.toPostCardInfo(currentState.spaceInfo.spaceID, currentState.spaceInfo.name) },
                                 isLoadingMore = false,
-                                hasMore = result.data.isNotEmpty(),
+                                hasMore = result.data.size >= 20,
                                 page = currentState.page + 1
                             )
                         }

@@ -20,7 +20,7 @@ data class CreateUiState(
     val title: String = "",
     val spacePage: Int = 0,
     val isLoadingMore: Boolean = false,
-    val hasMore: Boolean = true,
+    val hasMore: Boolean = false,
 )
 
 sealed class CreateEvent {
@@ -78,7 +78,7 @@ class CreateViewModel  @Inject constructor(
                         _uiState.value = _uiState.value.copy(
                             spaces = spaces,
                             isLoadingMore = false,
-                            hasMore = result.data.isNotEmpty(),
+                            hasMore = result.data.size >= 20,
                             spacePage = _uiState.value.spacePage + 1,
                         )
                     }

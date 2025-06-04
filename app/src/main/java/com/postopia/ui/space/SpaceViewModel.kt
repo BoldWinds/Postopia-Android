@@ -19,8 +19,8 @@ data class SpaceUiState(
     val userSpaces : List<SpaceInfo> = emptyList(),
     val popularSpacesPage : Int = 0,
     val userSpacesPage : Int = 0,
-    val hasMorePopularSpaces : Boolean = true,
-    val hasMoreUserSpaces : Boolean = true,
+    val hasMorePopularSpaces : Boolean = false,
+    val hasMoreUserSpaces : Boolean = false,
     val isLoadingMorePopularSpaces : Boolean = false,
     val isLoadingMoreUserSpaces : Boolean = false
 )
@@ -159,7 +159,7 @@ class SpaceViewModel @Inject constructor(
                             _uiState.update { it.copy(
                                 popularSpaces = it.popularSpaces + newSpaces,
                                 popularSpacesPage = nextPage,
-                                hasMorePopularSpaces = newSpaces.isNotEmpty(),
+                                hasMorePopularSpaces = newSpaces.size >= 20,
                                 isLoadingMorePopularSpaces = false
                             )}
                         }
@@ -181,7 +181,7 @@ class SpaceViewModel @Inject constructor(
                             _uiState.update { it.copy(
                                 userSpaces = it.userSpaces + newSpaces,
                                 userSpacesPage = nextPage,
-                                hasMoreUserSpaces = newSpaces.isNotEmpty(),
+                                hasMoreUserSpaces = newSpaces.size >= 20,
                                 isLoadingMoreUserSpaces = false
                             )}
                         }

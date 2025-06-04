@@ -119,7 +119,7 @@ class MessageViewModel @Inject constructor(
                                 messages = state.messages + newMessages,
                                 isLoadingMessages = false,
                                 isLoading = false,
-                                hasMoreMessages = newMessages.isNotEmpty(),
+                                hasMoreMessages = newMessages.size >= 20,
                                 messagePage = page + 1
                             )
                         }

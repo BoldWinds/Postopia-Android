@@ -29,7 +29,7 @@ data class PostDetailUiState(
     val comments : List<CommentTreeNodeUiModel> = emptyList<CommentTreeNodeUiModel>(),
     val commentsPage : Int = 0,
     val isLoadingComments : Boolean = false,
-    val hasMoreComments : Boolean = true,
+    val hasMoreComments : Boolean = false,
     val vote : VoteDialogUiModel? = null,
     val commentVotes : Map<Long, VoteDialogUiModel> = emptyMap<Long, VoteDialogUiModel>(),
     val replyToComment: CommentTreeNodeUiModel? = null,  // 当前回复的评论ID，null表示直接回复帖子
@@ -175,7 +175,7 @@ class PostDetailViewModel @Inject constructor(
                             currentState.copy(
                                 comments = updatedComments,
                                 isLoadingComments = false,
-                                hasMoreComments = result.data.isNotEmpty(),
+                                hasMoreComments = result.data.size >= 20,
                                 commentsPage = page + 1,
                                 commentVotes = updatedVotes
                             )

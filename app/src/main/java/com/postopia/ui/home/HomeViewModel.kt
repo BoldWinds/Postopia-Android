@@ -19,7 +19,7 @@ data class HomeUiState(
     val spaceInfos : List<PostCardInfo> = emptyList<PostCardInfo>(),
     val isLoadingMore : Boolean = false,
     val page : Int = 0,
-    val hasMore : Boolean = true,
+    val hasMore : Boolean = false,
 )
 
 sealed class HomeEvent {
@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
                                 spaceInfos =  it.spaceInfos + newSpaceInfos.map{ it.toPostCardInfo() },
                                 isLoadingMore = false,
                                 page = page + 1,
-                                hasMore = newSpaceInfos.isNotEmpty()
+                                hasMore = newSpaceInfos.size >= 20
                             )
                         }
                     }
