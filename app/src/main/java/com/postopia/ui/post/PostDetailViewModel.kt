@@ -75,15 +75,31 @@ class PostDetailViewModel @Inject constructor(
                 loadComments(event.postId)
             }
             is PostDetailEvent.UpdatePostOpinion -> {
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 sendOpinion(event.postId, event.spaceId, event.isPositive)
             }
             is PostDetailEvent.CancelPostOpinion -> {
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 cancelOpinion(event.postId, event.isPositive)
             }
             is PostDetailEvent.UpdateCommentOpinion -> {
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 sendCommentOpinion(event.commentId, event.spaceId, event.isPositive)
             }
             is PostDetailEvent.CancelCommentOpinion ->{
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 cancelCommentOpinion(event.commentId, event.isPositive)
             }
             is PostDetailEvent.LoadComments -> {
@@ -96,15 +112,27 @@ class PostDetailViewModel @Inject constructor(
                 voteOpinion(event.voteId, event.isPositive, event.commentId)
             }
             is PostDetailEvent.ShowReplyBox -> {
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 _uiState.update { it.copy(replyToComment = event.comment, isReplyBoxVisible = true) }
             }
             is PostDetailEvent.HideReplyBox -> {
                 _uiState.update { it.copy(replyToComment = null, isReplyBoxVisible = false) }
             }
             is PostDetailEvent.SendReply -> {
+                if(isArchived()){
+                    _uiState.update { it.copy(snackbarMessage = "该帖子已归档") }
+                    return
+                }
                 sendReply(event.content)
             }
         }
+    }
+
+    fun isArchived(): Boolean {
+        return _uiState.value.postDetail.isArchived
     }
 
     fun loadPostDetail(postId: Long, spaceId: Long) {
