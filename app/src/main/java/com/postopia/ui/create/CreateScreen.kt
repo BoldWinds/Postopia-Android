@@ -21,16 +21,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -98,45 +99,17 @@ fun CreateScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        // 顶部导航栏
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TextButton(onClick = {/*todo*/}) {
-                Text(
-                    text = "取消",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            TextButton(
-                onClick = {viewModel.handleEvent(CreateEvent.CreatePost(state.toHtml()))},
-                enabled = selectedSpace != null && uiState.title.isNotBlank()
-            ) {
-                Text(
-                    text = "发布",
-                    color = if (selectedSpace != null && uiState.title.isNotBlank()) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                    },
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween // 使用SpaceBetween让元素分布在两端
         ) {
-            // 选择社区按钮
+            // 选择社区按钮 - 不再使用weight，限制宽度并向左对齐
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .weight(1f, fill = false) // weight(1f, fill = false) 确保它不会占用所有空间
                     .clickable { showDialog = true },
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
@@ -146,9 +119,8 @@ fun CreateScreen(
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (selectedSpace != null && selectedSpace.avatar.isNotEmpty()) {
                         AsyncImage(
@@ -190,7 +162,8 @@ fun CreateScreen(
                         text = selectedSpace?.name ?: "选择空间",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp,
-                        modifier = Modifier.weight(1f)
+                        maxLines = 1, // 限制为单行文本
+                        overflow = TextOverflow.Ellipsis // 超出显示范围时显示省略号
                     )
 
                     Icon(
@@ -201,17 +174,37 @@ fun CreateScreen(
                 }
             }
 
-            // 标题输入
-            Text(
-                text = "Title",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 发布按钮 - 向右对齐
+            FilledTonalButton(
+                onClick = {viewModel.handleEvent(CreateEvent.CreatePost(state.toHtml()))},
+                enabled = selectedSpace != null && uiState.title.isNotBlank()
+            ) {
+                Text(
+                    text = "发布",
+                    color = if (selectedSpace != null && uiState.title.isNotBlank()) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    },
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
 
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = { viewModel.handleEvent(CreateEvent.ModifyTitle(it)) },
+                label = { Text("标题") },
+                leadingIcon = { Icon(Icons.Default.Title, contentDescription = "用户名") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
