@@ -111,7 +111,7 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = DateUtils.formatDate(userDetail.createdAt),
+                            text =  "注册于${DateUtils.formatDate(userDetail.createdAt)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )

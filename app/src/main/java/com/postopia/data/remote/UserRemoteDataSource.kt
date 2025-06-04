@@ -48,7 +48,7 @@ interface UserRemoteDataSource {
     @GET("/user/detail")
     suspend fun getUserDetail(@Query("userId") userId: String?): ApiResponse<UserDetail>
 
-    @GET("/user/search/infos")
+    @GET("/user/search")
     suspend fun searchUserInfos(@Query("userId") userIds: List<String>?): ApiResponse<List<UserInfo>>
 
     @GET("/user/avatars")
