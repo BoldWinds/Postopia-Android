@@ -54,7 +54,6 @@ fun BottomNavigationBar(
                                 saveState = true
                             }
                             launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 },
