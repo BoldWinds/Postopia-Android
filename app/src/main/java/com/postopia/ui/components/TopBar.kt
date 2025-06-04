@@ -1,8 +1,5 @@
 package com.postopia.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,36 +19,64 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.postopia.R
+import com.postopia.data.local.proto.userDataStore
+import com.postopia.ui.navigation.Screen
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
 @Composable
 fun TopBar(
     route: String,
-    onMenuClick: () -> Unit,
-    onSearchClick: (String) -> Unit,
-    onProfileClick: () -> Unit
+    onNavigate: (String) -> Unit,
+    onBack: () -> Unit,
 ) {
-    var isSearchMode by remember { mutableStateOf(false) }
+    // 根据路由确定是否显示特定组件
+    val isSearchScreen = route.startsWith("search/")
+    val isDetailScreen = route.startsWith("space/") && !route.contains("post/")
+    val isPostDetailScreen = route.contains("post/")
+    val shouldShowBackOnly = isDetailScreen || isPostDetailScreen
+
+    // 新增判断条件
+    val isCreateScreen = route == Screen.Create.route
+    val isMessageScreen = route == Screen.Message.route
+    val isProfileScreen = route == Screen.Profile.route
+    val shouldHideSearchButton = isCreateScreen || isMessageScreen || isProfileScreen
+    val shouldHideAvatar = isProfileScreen
+
+    var isSearchMode by remember { mutableStateOf(isSearchScreen) }
     var searchText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
 
+    val context = LocalContext.current
+    val userAvatar = context.applicationContext.userDataStore.data
+        .map { userProto ->
+            userProto.avatar.takeIf { it.isNotEmpty() } ?: R.drawable.ic_launcher_background
+        }
+        .collectAsState(initial = R.drawable.ic_launcher_background)
+
     TopAppBar(
         title = {
-            if (isSearchMode) {
+            if (isSearchMode || isSearchScreen) {
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
@@ -66,9 +91,9 @@ fun TopBar(
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF4500),
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color(0xFFFF4500)
+                        focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.tertiary
                     ),
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Search
@@ -76,30 +101,44 @@ fun TopBar(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             if (searchText.isNotBlank()) {
-                                onSearchClick(searchText)
-                                isSearchMode = false
-                                searchText = ""
+                                onNavigate(Screen.Search.createRoute(searchText))
+                                if (!isSearchScreen) {
+                                    isSearchMode = false
+                                    searchText = ""
+                                }
                             }
                         }
                     )
                 )
-            } else {
+            } else if (!shouldShowBackOnly) {
                 Text(
                     text = "Postopia",
-                    color = Color(0xFFFF4500), // Reddit-like orange color
+                    color = Color(0xFFFF4500),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
         },
         navigationIcon = {
-            if (isSearchMode) {
+            if (isSearchMode || isSearchScreen) {
                 IconButton(
                     onClick = {
-                        isSearchMode = false
-                        searchText = ""
+                        if(!isSearchScreen) {
+                            isSearchMode = false
+                            searchText = ""
+                        } else{
+                            onBack()
+                        }
                     }
                 ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回"
+                    )
+                }
+            } else if (shouldShowBackOnly) {
+                // 在SpaceDetail和PostDetail页面显示返回按钮
+                IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回"
@@ -113,9 +152,11 @@ fun TopBar(
                 IconButton(
                     onClick = {
                         if (searchText.isNotBlank()) {
-                            onSearchClick(searchText)
-                            isSearchMode = false
-                            searchText = ""
+                            onNavigate(Screen.Search.createRoute(searchText))
+                            if (!isSearchScreen) {
+                                isSearchMode = false
+                                searchText = ""
+                            }
                         }
                     }
                 ) {
@@ -125,35 +166,37 @@ fun TopBar(
                         tint = if (searchText.isNotBlank()) Color(0xFFFF4500) else Color.Gray
                     )
                 }
-            } else {
-                // 正常模式下显示搜索和个人资料按钮
-                IconButton(
-                    onClick = {
-                        isSearchMode = true
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
-                    )
-                }
-                IconButton(onClick = { onProfileClick() }) {
-                    // Custom profile icon with circle background similar to Reddit
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF57ABCB)) // Light blue background like in screenshot
+            } else if (!shouldShowBackOnly) {
+                // 在Home/Space/Message页面显示搜索和个人资料按钮
+                if (!shouldHideSearchButton) {
+                    IconButton(
+                        onClick = {
+                            isSearchMode = true
+                        }
                     ) {
-                        // Green dot indicating online status
-                        Box(
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+                }
+                if (!shouldHideAvatar) {
+                    IconButton(onClick = {
+                        if(userAvatar.value == R.drawable.ic_launcher_background){
+                            onNavigate(Screen.Auth.route)
+                        } else {
+                            onNavigate(Screen.Profile.route)
+                        }
+                    }) {
+                        AsyncImage(
+                            model = userAvatar.value,
+                            contentDescription = "用户头像",
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(Color.Green)
-                                .border(1.dp, Color(0xFF57ABCB), CircleShape)
+                                .size(48.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(id = R.drawable.ic_launcher_background),
+                            error = painterResource(id = R.drawable.ic_launcher_background)
                         )
                     }
                 }

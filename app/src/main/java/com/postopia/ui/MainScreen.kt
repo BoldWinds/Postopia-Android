@@ -36,7 +36,7 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val currentRoute = navBackStackEntry?.destination?.route
-    val hideBarsRoutes = listOf("auth", "space_detail", "post_detail")
+    val hideBarsRoutes = listOf("auth")
     // 延迟更新 shouldShowBars，避免在内容切换前就显示栏位
     var shouldShowBars by remember { mutableStateOf(false) }
 
@@ -70,7 +70,6 @@ fun MainScreen(
 
     val isLoading by sharedViewModel.isLoading.collectAsState()
 
-    // TODO 优化topBar
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState){ data ->
@@ -86,7 +85,17 @@ fun MainScreen(
         topBar = {
             if(shouldShowBars) TopBar(
                 route = navController.currentDestination?.route ?: "",
-                {}, {query->navController.navigate(Screen.Search.createRoute(query))}, {navController.navigate("auth")}
+                onNavigate = {route -> navController.navigate(route)},
+                onBack = {
+                    if (navController.previousBackStackEntry != null) {
+                        navController.navigateUp()
+                    } else {
+                        // 其他情况返回首页
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
+                }
             )
         },
         bottomBar = {
