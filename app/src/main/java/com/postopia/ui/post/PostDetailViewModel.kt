@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.postopia.data.model.OpinionStatus
 import com.postopia.data.model.RecursiveCommentInfo
 import com.postopia.data.model.Result
+import com.postopia.data.model.VoteType
 import com.postopia.domain.mapper.CommentMapper.toUiModel
 import com.postopia.domain.mapper.PostMapper.toUiModel
 import com.postopia.domain.mapper.VoteMapper.toUiModel
@@ -12,6 +13,7 @@ import com.postopia.domain.repository.CommentRepository
 import com.postopia.domain.repository.OpinionRepository
 import com.postopia.domain.repository.PostRepository
 import com.postopia.domain.repository.SpaceRepository
+import com.postopia.domain.repository.VoteRepository
 import com.postopia.ui.model.CommentTreeNodeUiModel
 import com.postopia.ui.model.PostDetailUiModel
 import com.postopia.ui.model.VoteDialogUiModel
@@ -46,11 +48,11 @@ sealed class PostDetailEvent {
     data class CancelCommentOpinion(val commentId: Long, val isPositive: Boolean) : PostDetailEvent()
     data class VoteOpinion(val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
     data class CommentVoteOpinion(val commentId: Long, val voteId: Long, val isPositive: Boolean) : PostDetailEvent()
-
-    // 新增回复相关事件
     data class ShowReplyBox(val comment: CommentTreeNodeUiModel?) : PostDetailEvent()
     object HideReplyBox : PostDetailEvent()
     data class SendReply(val content: String) : PostDetailEvent()
+    data class CreatePostVote(val type: VoteType) : PostDetailEvent()
+    data class CreateCommentVote(val type: VoteType, val commentID: Long, val content: String) : PostDetailEvent()
 }
 
 @HiltViewModel
@@ -59,6 +61,7 @@ class PostDetailViewModel @Inject constructor(
     private val opinionRepository: OpinionRepository,
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
+    private val voteRepository: VoteRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PostDetailUiState())
@@ -128,6 +131,20 @@ class PostDetailViewModel @Inject constructor(
                 }
                 sendReply(event.content)
             }
+            is PostDetailEvent.CreatePostVote -> {
+                val postID = _uiState.value.postDetail.postID
+                val userID = _uiState.value.postDetail.userID
+                val spaceID = _uiState.value.postDetail.spaceID
+                val subject = _uiState.value.postDetail.subject
+                createPostVote(event.type,postID, userID, spaceID, subject)
+            }
+            is PostDetailEvent.CreateCommentVote -> {
+                val postID = _uiState.value.postDetail.postID
+                val userID = _uiState.value.postDetail.userID
+                val spaceID = _uiState.value.postDetail.spaceID
+                createCommentVote(event.type, postID, userID, spaceID, event.commentID, event.content)
+            }
+
         }
     }
 
@@ -432,4 +449,93 @@ class PostDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun createPostVote(type: VoteType, postID: Long, userID: Long, spaceID: Long, subject: String){
+        viewModelScope.launch {
+            val repository = when(type){
+                VoteType.ARCHIVE_POST -> voteRepository.archivePost(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    postSubject = subject
+                )
+                VoteType.UNARCHIVE_POST -> voteRepository.unarchivePost(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    postSubject = subject
+                )
+                VoteType.DELETE_POST -> voteRepository.deletePost(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    postSubject = subject
+                )
+                else -> {
+                    _uiState.update { it.copy(snackbarMessage = "不支持的投票类型") }
+                    return@launch
+                }
+            }
+            repository.collect { result->
+                when (result) {
+                    is Result.Loading -> { }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(snackbarMessage = "投票已创建") }
+                        // 重新加载帖子详情
+                        loadPostDetail(postID, spaceID)
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun createCommentVote(type: VoteType, postID: Long, userID: Long, spaceID: Long, commentID: Long,content: String){
+        viewModelScope.launch {
+            val repository = when(type){
+                VoteType.PIN_COMMENT -> voteRepository.pinComment(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    commentId = commentID,
+                    commentContent = content
+                )
+                VoteType.UNPIN_COMMENT -> voteRepository.unpinComment(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    commentId = commentID,
+                    commentContent = content
+                )
+                VoteType.DELETE_COMMENT -> voteRepository.deleteComment(
+                    postId = postID,
+                    userId = userID,
+                    spaceId = spaceID,
+                    commentId = commentID,
+                    commentContent = content
+                )
+                else -> {
+                    _uiState.update { it.copy(snackbarMessage = "不支持的投票类型") }
+                    return@launch
+                }
+            }
+            repository.collect { result->
+                when (result) {
+                    is Result.Loading -> { }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(snackbarMessage = "投票已创建") }
+                        // 重新加载评论
+                        _uiState.update { it.copy(commentsPage = 0, comments = emptyList()) }
+                        loadComments(postID)
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(snackbarMessage = result.exception.message) }
+                    }
+                }
+            }
+        }
+    }
+
 }

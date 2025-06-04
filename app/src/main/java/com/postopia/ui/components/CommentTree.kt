@@ -2,6 +2,7 @@ package com.postopia.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,14 +15,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.postopia.data.model.VoteType
 import com.postopia.ui.model.CommentTreeNodeUiModel
 import com.postopia.ui.model.VoteDialogUiModel
 import com.postopia.utils.DateUtils
@@ -48,7 +58,8 @@ fun CommentTree(
     onUserClick: (CommentTreeNodeUiModel) -> Unit,
     onUpdateOpinion: (Long, Boolean) -> Unit,
     onCancelOpinion: (Long, Boolean) -> Unit,
-    onReplyClick: (Long) -> Unit
+    onReplyClick: (Long) -> Unit,
+    onCreateVote: (VoteType) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -63,7 +74,8 @@ fun CommentTree(
             onCommentClick = onCommentClick,
             onCancelOpinion = onCancelOpinion,
             onUpdateOpinion = onUpdateOpinion,
-            onReplyClick = onReplyClick
+            onReplyClick = onReplyClick,
+            onCreateVote = onCreateVote,
         )
 
         // Render children with indentation
@@ -81,7 +93,8 @@ fun CommentTree(
                         onUserClick = onUserClick,
                         onCancelOpinion = onCancelOpinion,
                         onUpdateOpinion = onUpdateOpinion,
-                        onReplyClick = onReplyClick
+                        onReplyClick = onReplyClick,
+                        onCreateVote = onCreateVote,
                     )
                 }
             }
@@ -97,7 +110,8 @@ private fun CommentItem(
     onCommentClick: (CommentTreeNodeUiModel) -> Unit,
     onUpdateOpinion: (Long, Boolean) -> Unit,
     onCancelOpinion: (Long, Boolean) -> Unit,
-    onReplyClick: (Long) -> Unit
+    onReplyClick: (Long) -> Unit,
+    onCreateVote: (VoteType) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -165,12 +179,6 @@ private fun CommentItem(
                     }
                 }
 
-                // 添加VoteButton，仅当vote不为null时显示
-                if (vote != null) {
-                    VoteButton(voteModel = vote, onVote = onVote)
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-
                 Text(
                     text = DateUtils.formatDate(comment.createdAt),
                     style = MaterialTheme.typography.bodySmall,
@@ -196,6 +204,7 @@ private fun CommentItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 左侧部分
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -218,16 +227,71 @@ private fun CommentItem(
                         Icon(
                             imageVector = Icons.Default.ChatBubbleOutline,
                             contentDescription = "Reply",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = comment.children.size.toString(),
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
+
+                if(vote == null){
+                    VoteMenu(isPinned = comment.isPinned, onVote = onCreateVote)
+                }else{
+                    VoteButton(voteModel = vote, onVote = onVote)
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun VoteMenu(
+    isPinned : Boolean,
+    onVote: (VoteType) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(contentAlignment = Alignment.Center) {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "更多选项"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            if (isPinned){
+                DropdownMenuItem(
+                    text = { Text(VoteType.UNPIN_COMMENT.toString()) },
+                    onClick = {
+                        onVote(VoteType.UNPIN_COMMENT)
+                        expanded = false
+                    }
+                )
+            }else{
+                DropdownMenuItem(
+                    text = { Text(VoteType.PIN_COMMENT.toString()) },
+                    onClick = {
+                        onVote(VoteType.PIN_COMMENT)
+                        expanded = false
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(VoteType.DELETE_COMMENT.toString()) },
+                onClick = {
+                    onVote(VoteType.DELETE_COMMENT)
+                    expanded = false
+                }
+            )
         }
     }
 }
