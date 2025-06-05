@@ -527,7 +527,7 @@ class PostDetailViewModel @Inject constructor(
                     is Result.Success -> {
                         _uiState.update { it.copy(snackbarMessage = "投票已创建") }
                         // 重新加载评论
-                        _uiState.update { it.copy(commentsPage = 0, comments = emptyList()) }
+                        _uiState.update { it.copy(commentsPage = 0, comments = emptyList(), hasMoreComments = false) }
                         loadComments(postID)
                     }
                     is Result.Error -> {

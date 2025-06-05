@@ -209,7 +209,8 @@ fun VoteDialog(
 
                 // Vote progress visualization
                 VoteProgressBar(
-                    positiveCount = voteModel.positiveCount,
+                    positiveCount = if(voteModel.positiveCount.toInt() == 0 && voteModel.negativeCount.toInt() == 0) 1
+                        else voteModel.positiveCount,
                     negativeCount = voteModel.negativeCount,
                     modifier = Modifier
                         .fillMaxWidth()
