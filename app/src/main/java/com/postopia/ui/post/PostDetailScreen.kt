@@ -1,6 +1,5 @@
 package com.postopia.ui.post
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,15 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,22 +28,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,8 +47,10 @@ import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.CommentTree
 import com.postopia.ui.components.LikeDislikeBar
 import com.postopia.ui.components.ReplyDialog
-import com.postopia.ui.components.VoteCard
+import com.postopia.ui.components.VoteButton
+import com.postopia.ui.components.VoteMenu
 import com.postopia.ui.model.PostDetailUiModel
+import com.postopia.ui.model.VoteDialogUiModel
 import com.postopia.utils.DateUtils
 
 @Composable
@@ -110,28 +100,17 @@ fun PostDetailScreen(
         item {
             PostContent(
                 uiInfo = postUiData,
+                vote = uiState.vote,
+                onCreateVote = {voteType -> viewModel.handleEvent(PostDetailEvent.CreatePostVote(voteType))},
+                onVote = { voteId, isPositive -> viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive)) },
                 updateOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.UpdatePostOpinion(postId, spaceId, isPositive)) },
                 cancelOpinion = { isPositive -> viewModel.handleEvent(PostDetailEvent.CancelPostOpinion(postId, isPositive)) },
                 onReplyClick = { viewModel.handleEvent(PostDetailEvent.ShowReplyBox(null)) }
             )
         }
-        item{
-            if(uiState.vote != null){
-                VoteCard(
-                        voteModel = uiState.vote!!,
-                        onVote = { voteId, isPositive ->
-                            viewModel.handleEvent(PostDetailEvent.VoteOpinion(voteId, isPositive)) },)
-
-            }else{
-                PostVoteMenu(
-                    isArchived = postUiData.isArchived,
-                    onVote = {voteType -> viewModel.handleEvent(PostDetailEvent.CreatePostVote(voteType))}
-                )
-            }
-        }
 
         item {
-            HorizontalDivider(color = MaterialTheme.colorScheme.background)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
         }
         items(
             items = uiState.comments,
@@ -171,6 +150,9 @@ fun PostDetailScreen(
 @Composable
 fun PostContent(
     uiInfo: PostDetailUiModel,
+    vote: VoteDialogUiModel? = null,
+    onCreateVote: (VoteType) -> Unit,
+    onVote: (Long, Boolean) -> Unit,
     updateOpinion: (Boolean) -> Unit,
     cancelOpinion: (Boolean) -> Unit,
     onReplyClick: () -> Unit,
@@ -178,9 +160,12 @@ fun PostContent(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
             .clickable{onReplyClick()}
             .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -225,6 +210,18 @@ fun PostContent(
                         modifier = Modifier.size(20.dp)
                     )
                 }
+                if(vote == null){
+                    VoteMenu(
+                        isPost = true,
+                        isArchivedOrPinned = uiInfo.isArchived,
+                        onVote = onCreateVote
+                    )
+                }else{
+                    VoteButton(
+                        voteModel = vote,
+                        onVote = onVote,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -232,9 +229,8 @@ fun PostContent(
             // 帖子标题
             Text(
                 text = uiInfo.subject,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -243,7 +239,6 @@ fun PostContent(
             Text(
                 text = AnnotatedString.fromHtml(uiInfo.content),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 20.sp
             )
 
@@ -268,117 +263,26 @@ fun PostContent(
                 )
                 // 评论按钮
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                        verticalAlignment = Alignment.CenterVertically
+                        ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
                         contentDescription = "评论",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = uiInfo.commentCount.toString(),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Text(
-                    text = DateUtils.formatDate(uiInfo.createdAt),
+                    text = "创建于${DateUtils.formatDate(uiInfo.createdAt)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 20.sp
                 )
             }
         }
     }
 }
-
-@Composable
-private fun PostVoteMenu(
-    isArchived: Boolean,
-    onVote: (VoteType) -> Unit
-){
-    var expanded by remember { mutableStateOf(false) }
-    var cardWidth by remember { mutableStateOf(0) }
-    val density = LocalDensity.current
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { expanded = true }
-            .onSizeChanged { size -> cardWidth = size.width },
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            MaterialTheme.colorScheme.surfaceVariant,
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "发起投票",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 16.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "展开",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // 计算菜单的偏移量，使其居中显示
-        val dropdownOffset = with(density) {
-            DpOffset(
-                x = (cardWidth / 2).toDp(), // 菜单宽度约为150dp，所以偏移一半
-                y = 0.dp
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            offset = dropdownOffset
-        ) {
-            // 帖子相关的选项
-            if(isArchived){
-                DropdownMenuItem(
-                    text = { Text(VoteType.UNARCHIVE_POST.toString()) },
-                    onClick = {
-                        onVote(VoteType.UNARCHIVE_POST)
-                        expanded = false
-                    }
-                )
-            }else{
-                DropdownMenuItem(
-                    text = { Text(VoteType.ARCHIVE_POST.toString()) },
-                    onClick = {
-                        onVote(VoteType.ARCHIVE_POST)
-                        expanded = false
-                    }
-                )
-            }
-            DropdownMenuItem(
-                text = { Text(VoteType.DELETE_POST.toString()) },
-                onClick = {
-                    onVote(VoteType.DELETE_POST)
-                    expanded = false
-                }
-            )
-        }
-    }
-}
-

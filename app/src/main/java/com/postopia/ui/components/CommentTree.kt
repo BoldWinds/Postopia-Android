@@ -1,10 +1,9 @@
 package com.postopia.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,22 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,16 +108,17 @@ private fun CommentItem(
             .fillMaxWidth()
             .clickable { onCommentClick(comment) },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (comment.depth == 0) 2.dp else 1.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Header with user info and time
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -157,7 +148,6 @@ private fun CommentItem(
                                 text = comment.nickname,
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             if (comment.isPinned) {
@@ -174,16 +164,14 @@ private fun CommentItem(
                         Text(
                             text = "u/${comment.username}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-
-                Text(
-                    text = DateUtils.formatDate(comment.createdAt),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if(vote == null){
+                    VoteMenu(isPost = false, isArchivedOrPinned = comment.isPinned, onVote = onCreateVote)
+                }else{
+                    VoteButton(voteModel = vote, onVote = onVote)
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -192,7 +180,6 @@ private fun CommentItem(
             Text(
                 text = AnnotatedString.fromHtml(comment.content),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 20.sp
             )
 
@@ -217,81 +204,26 @@ private fun CommentItem(
                         updateOpinion = { isPositive -> onUpdateOpinion(comment.id, isPositive) },
                     )
 
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // 回复
-                    TextButton(
-                        onClick = { onReplyClick(comment.id) },
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.ChatBubbleOutline,
-                            contentDescription = "Reply",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = "评论",
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = comment.children.size.toString(),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
-
-                if(vote == null){
-                    VoteMenu(isPinned = comment.isPinned, onVote = onCreateVote)
-                }else{
-                    VoteButton(voteModel = vote, onVote = onVote)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun VoteMenu(
-    isPinned : Boolean,
-    onVote: (VoteType) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(contentAlignment = Alignment.Center) {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "更多选项"
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            if (isPinned){
-                DropdownMenuItem(
-                    text = { Text(VoteType.UNPIN_COMMENT.toString()) },
-                    onClick = {
-                        onVote(VoteType.UNPIN_COMMENT)
-                        expanded = false
-                    }
-                )
-            }else{
-                DropdownMenuItem(
-                    text = { Text(VoteType.PIN_COMMENT.toString()) },
-                    onClick = {
-                        onVote(VoteType.PIN_COMMENT)
-                        expanded = false
-                    }
+                Text(
+                    text = "回复于${DateUtils.formatDate(comment.createdAt)}",
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
-            DropdownMenuItem(
-                text = { Text(VoteType.DELETE_COMMENT.toString()) },
-                onClick = {
-                    onVote(VoteType.DELETE_COMMENT)
-                    expanded = false
-                }
-            )
         }
     }
 }

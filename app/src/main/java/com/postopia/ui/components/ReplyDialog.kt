@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,8 +66,7 @@ fun ReplyDialog(
                     // 顶部导航栏
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -139,6 +139,7 @@ fun ReplyDialog(
                                 )
                             }
 
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                             Spacer(modifier = Modifier.height(8.dp))
 
                             // 被回复的内容

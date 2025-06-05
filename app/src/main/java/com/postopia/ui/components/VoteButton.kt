@@ -46,7 +46,7 @@ fun VoteButton(
         shape = RoundedCornerShape(8.dp)
     ) {
         Text(
-            text = "投票",
+            text = if(voteModel.opinion == OpinionStatus.NIL) "投票" else "已投票",
             style = MaterialTheme.typography.labelLarge
         )
     }

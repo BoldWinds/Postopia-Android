@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,13 +56,9 @@ fun LikeDislikeBar(
             modifier = Modifier.size(size + 4.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ThumbUp,
+                imageVector = if (opinion == OpinionStatus.POSITIVE) Icons.Filled.ThumbUp
+                else Icons.Outlined.ThumbUp,
                 contentDescription = "点赞",
-                tint = if (opinion == OpinionStatus.POSITIVE) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
                 modifier = Modifier.size(size)
             )
         }
@@ -71,7 +69,6 @@ fun LikeDislikeBar(
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
 
@@ -94,13 +91,9 @@ fun LikeDislikeBar(
             modifier = Modifier.size(size + 4.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ThumbDown,
+                imageVector = if (opinion == OpinionStatus.NEGATIVE) Icons.Filled.ThumbDown
+                else Icons.Outlined.ThumbDown,
                 contentDescription = "点踩",
-                tint = if (opinion == OpinionStatus.NEGATIVE) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
                 modifier = Modifier.size(size)
             )
         }

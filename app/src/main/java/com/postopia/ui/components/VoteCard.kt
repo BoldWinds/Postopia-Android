@@ -22,6 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.postopia.data.model.OpinionStatus
 import com.postopia.ui.model.VoteDialogUiModel
 
+/*
+* To be deprecated in favor of VoteButton
+*
+* */
 @Composable
 fun VoteCard(
     voteModel: VoteDialogUiModel,
