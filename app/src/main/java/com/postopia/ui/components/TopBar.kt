@@ -113,7 +113,7 @@ fun TopBar(
             } else if (!shouldShowBackOnly) {
                 Text(
                     text = "Postopia",
-                    color = Color(0xFFFF4500),
+                    color = Color(0xFF114DD2),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -163,7 +163,7 @@ fun TopBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "搜索",
-                        tint = if (searchText.isNotBlank()) Color(0xFFFF4500) else Color.Gray
+                        tint = if (searchText.isNotBlank()) Color(0xFF114DD2) else Color.Gray
                     )
                 }
             } else if (!shouldShowBackOnly) {

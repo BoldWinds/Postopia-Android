@@ -129,10 +129,11 @@ class AuthViewModel @Inject constructor(
                         _uiState.update { it.copy(isLoading = true, snackbarMessage = null) }
                     }
                     is Result.Success -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登陆成功！", navigateToHomeEvent = true) }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登录成功！", navigateToHomeEvent = true) }
                     }
                     is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false, snackbarMessage = result.message) }
+                        _uiState.update { it.copy(isLoading = false, snackbarMessage = "登录失败")
+                        }
                     }
                 }
             }
