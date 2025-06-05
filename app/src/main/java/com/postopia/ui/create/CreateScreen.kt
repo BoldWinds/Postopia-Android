@@ -52,7 +52,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.EditorController
@@ -92,7 +91,6 @@ fun CreateScreen(
         )
     }
 
-    val state = rememberRichTextState()
 
     Column(
         modifier = Modifier
@@ -178,7 +176,7 @@ fun CreateScreen(
 
             // 发布按钮 - 向右对齐
             FilledTonalButton(
-                onClick = {viewModel.handleEvent(CreateEvent.CreatePost(state.toHtml()))},
+                onClick = {viewModel.handleEvent(CreateEvent.CreatePost)},
                 enabled = selectedSpace != null && uiState.title.isNotBlank()
             ) {
                 Text(
@@ -216,12 +214,12 @@ fun CreateScreen(
                 maxLines = 3
             )
 
-            EditorController(state)
+            EditorController(uiState.textState)
             RichTextEditor(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(8f),
-                state = state,
+                state = uiState.textState,
             )
             Spacer(modifier = Modifier.weight(1f))
         }

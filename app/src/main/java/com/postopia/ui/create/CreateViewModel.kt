@@ -2,6 +2,7 @@ package com.postopia.ui.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mohamedrejeb.richeditor.model.RichTextState
 import com.postopia.data.model.Result
 import com.postopia.domain.mapper.SpaceMapper.toUiModel
 import com.postopia.domain.repository.PostRepository
@@ -21,11 +22,13 @@ data class CreateUiState(
     val spacePage: Int = 0,
     val isLoadingMore: Boolean = false,
     val hasMore: Boolean = false,
+    val textState: RichTextState = RichTextState(),
 )
 
 sealed class CreateEvent {
     object SnackbarMessageShown : CreateEvent()
-    data class CreatePost(val content: String) : CreateEvent()
+    //data class CreatePost(val content: String) : CreateEvent()
+    object CreatePost : CreateEvent()
     object LoadMoreSpaces : CreateEvent()
     data class SelectSpace(val space: SpaceDetailUiModel) : CreateEvent()
     data class ModifyTitle(val title: String) : CreateEvent()
@@ -50,7 +53,7 @@ class CreateViewModel  @Inject constructor(
                 _uiState.value = _uiState.value.copy(snackbarMessage = null)
             }
             is CreateEvent.CreatePost -> {
-                post(event.content)
+                post(_uiState.value.textState.toHtml())
             }
             is CreateEvent.SelectSpace -> {
                 _uiState.value = _uiState.value.copy(
@@ -121,7 +124,7 @@ class CreateViewModel  @Inject constructor(
                             title = "",
                             selectedSpace = null,
                         )
-                        // todo quit
+                        _uiState.value.textState.setText("")
                     }
                     is Result.Error -> {
                         _uiState.value = _uiState.value.copy(

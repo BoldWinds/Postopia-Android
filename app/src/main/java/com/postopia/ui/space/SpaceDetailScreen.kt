@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -195,7 +196,7 @@ fun SpaceDetailTopBar(
                         model = uiInfo.avatar,
                         contentDescription = "Space Avatar",
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentScale = ContentScale.Crop
@@ -227,7 +228,13 @@ fun SpaceDetailTopBar(
                     // 加入按钮
                     FilledTonalButton(
                         onClick = onJoinClick,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = if (uiInfo.isMember) MaterialTheme.colorScheme.surfaceVariant
+                            else MaterialTheme.colorScheme.primary,
+                            contentColor = if (uiInfo.isMember) MaterialTheme.colorScheme.onSurfaceVariant
+                            else MaterialTheme.colorScheme.onPrimary,
+                        ),
                     ) {
                         Text(
                             text = if (uiInfo.isMember) "退出" else "加入",

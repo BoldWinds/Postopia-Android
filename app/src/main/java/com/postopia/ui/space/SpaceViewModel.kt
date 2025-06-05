@@ -27,7 +27,7 @@ data class SpaceUiState(
 
 sealed class SpaceEvent {
     object SnackbarMessageShown : SpaceEvent()
-    data class JoinOrLeave(val spaceId: Long, val join : Boolean, val isPopularSpaces: Boolean) : SpaceEvent()
+    data class JoinOrLeave(val spaceId: Long, val join : Boolean) : SpaceEvent()
     data class LoadMoreSpaces(val isPopularSpaces: Boolean) : SpaceEvent()
 }
 
@@ -48,7 +48,7 @@ class SpaceViewModel @Inject constructor(
                 _uiState.update { it.copy(snackbarMessage = null) }
             }
             is SpaceEvent.JoinOrLeave -> {
-                joinOrLeave(event.spaceId, event.join, event.isPopularSpaces)
+                joinOrLeave(event.spaceId, event.join)
             }
             is SpaceEvent.LoadMoreSpaces -> {
                 loadMoreSpaces(event.isPopularSpaces)
@@ -95,9 +95,9 @@ class SpaceViewModel @Inject constructor(
         }
     }
 
-    fun joinOrLeave(id: Long, join: Boolean, isPopularSpaces: Boolean) {
+    fun joinOrLeave(id: Long, leave: Boolean) {
         viewModelScope.launch {
-            val repository = if (join) {
+            val repository = if (leave) {
                 spaceRepository.leaveSpace(id)
             } else {
                 spaceRepository.joinSpace(id)
@@ -108,20 +108,30 @@ class SpaceViewModel @Inject constructor(
                     is Result.Loading -> { }
                     is Result.Success -> {
                         _uiState.update { currentState ->
-                            // 根据isPopularSpaces参数决定更新哪个列表
-                            if (isPopularSpaces) {
-                                // 只更新popularSpaces列表
-                                val updatedPopularSpaces = currentState.popularSpaces.map { space ->
-                                    if (space.space.id == id) space.copy(isMember = !join) else space
+                            val updatedPopularSpaces = currentState.popularSpaces.map { spaceInfo ->
+                                if (spaceInfo.space.id == id) {
+                                    spaceInfo.copy(isMember = !leave)
+                                } else {
+                                    spaceInfo
                                 }
-                                currentState.copy(popularSpaces = updatedPopularSpaces)
-                            } else {
-                                // 只更新userSpaces列表
-                                val updatedUserSpaces = currentState.userSpaces.map { space ->
-                                    if (space.space.id == id) space.copy(isMember = !join) else space
-                                }
-                                currentState.copy(userSpaces = updatedUserSpaces)
                             }
+
+                            val updatedUserSpaces = if (leave) {
+                                currentState.userSpaces.filter { it.space.id != id }
+                            } else {
+                                val joinSpace = updatedPopularSpaces.find { it.space.id == id }
+                                currentState.userSpaces + joinSpace
+                                if(joinSpace != null) {
+                                    currentState.userSpaces + joinSpace
+                                } else {
+                                    currentState.userSpaces
+                                }
+                            }
+
+                            currentState.copy(
+                                popularSpaces = updatedPopularSpaces,
+                                userSpaces = updatedUserSpaces,
+                            )
                         }
                     }
                     is Result.Error -> {

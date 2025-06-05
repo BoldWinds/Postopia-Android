@@ -74,7 +74,7 @@ fun SpaceScreen(
                 spaces = popularSpaces,
                 navigateToSpaceDetail = navigateToSpaceDetail,
                 onJoinOrLeave = { spaceId, join ->
-                    viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join, true))
+                    viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join))
                 },
                 onLoadMore = {
                     viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(true))
@@ -98,7 +98,7 @@ fun SpaceScreen(
                     spaces = userSpaces,
                     navigateToSpaceDetail = navigateToSpaceDetail,
                     onJoinOrLeave = { spaceId, join ->
-                        viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join, false))
+                        viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join))
                     },
                     onLoadMore = {
                         viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(false))
