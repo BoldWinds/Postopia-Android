@@ -15,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +32,7 @@ import com.postopia.data.model.SpaceInfo
 import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.SpaceCard
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpaceScreen(
     viewModel: SpaceViewModel = hiltViewModel(),
@@ -52,76 +55,82 @@ fun SpaceScreen(
     val popularSpaces = uiState.popularSpaces
     val userSpaces = uiState.userSpaces
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = {viewModel.handleEvent(SpaceEvent.Refresh)},
     ) {
-        // 推荐空间部分
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "热门空间",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 推荐空间部分
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "热门空间",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
-        item {
-            SpaceHorizontalList(
-                spaces = popularSpaces,
-                navigateToSpaceDetail = navigateToSpaceDetail,
-                onJoinOrLeave = { spaceId, join ->
-                    viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join))
-                },
-                onLoadMore = {
-                    viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(true))
-                },
-                isLoadingMore = uiState.isLoadingMorePopularSpaces,
-                hasMore = uiState.hasMorePopularSpaces,
-            )
-        }
-
-        // 用户空间部分
-        item {
-            Text(
-                text = "你的空间",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        if (userSpaces.isNotEmpty()) {
             item {
                 SpaceHorizontalList(
-                    spaces = userSpaces,
+                    spaces = popularSpaces,
                     navigateToSpaceDetail = navigateToSpaceDetail,
                     onJoinOrLeave = { spaceId, join ->
                         viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join))
                     },
                     onLoadMore = {
-                        viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(false))
+                        viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(true))
                     },
-                    isLoadingMore = uiState.isLoadingMoreUserSpaces,
-                    hasMore = uiState.hasMoreUserSpaces,
+                    isLoadingMore = uiState.isLoadingMorePopularSpaces,
+                    hasMore = uiState.hasMorePopularSpaces,
                 )
             }
-        } else {
+
+            // 用户空间部分
             item {
                 Text(
-                    text = "您还没有加入任何空间，快去探索吧！",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    text = "你的空间",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-        }
+            if (userSpaces.isNotEmpty()) {
+                item {
+                    SpaceHorizontalList(
+                        spaces = userSpaces,
+                        navigateToSpaceDetail = navigateToSpaceDetail,
+                        onJoinOrLeave = { spaceId, join ->
+                            viewModel.handleEvent(SpaceEvent.JoinOrLeave(spaceId, join))
+                        },
+                        onLoadMore = {
+                            viewModel.handleEvent(SpaceEvent.LoadMoreSpaces(false))
+                        },
+                        isLoadingMore = uiState.isLoadingMoreUserSpaces,
+                        hasMore = uiState.hasMoreUserSpaces,
+                    )
+                }
+            } else {
+                item {
+                    Text(
+                        text = "您还没有加入任何空间，快去探索吧！",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
+            }
 
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
+
 }
 
 @Composable

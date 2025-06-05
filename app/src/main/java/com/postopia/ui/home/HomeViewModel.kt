@@ -20,11 +20,13 @@ data class HomeUiState(
     val isLoadingMore : Boolean = false,
     val page : Int = 0,
     val hasMore : Boolean = false,
+    val isRefreshing: Boolean = false,
 )
 
 sealed class HomeEvent {
     object SnackbarMessageShown : HomeEvent()
     object LoadMorePosts : HomeEvent()
+    object Refresh: HomeEvent()
 }
 
 @HiltViewModel
@@ -45,13 +47,17 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(snackbarMessage = null) }
             }
             is HomeEvent.LoadMorePosts -> {
-                loadPopularPosts()
+                loadPopularPosts(_uiState.value.page)
+            }
+            is HomeEvent.Refresh -> {
+                _uiState.update { it.copy(isRefreshing = true, page = 0, spaceInfos = emptyList(), hasMore = false) }
+                loadPopularPosts(0)
+                _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }
 
-    fun loadPopularPosts(){
-        val page = _uiState.value.page
+    fun loadPopularPosts(page: Int = 0){
         viewModelScope.launch {
             postRepository.getPopularPosts(page).collect { result ->
                 when (result) {

@@ -1,5 +1,7 @@
 package com.postopia.ui.home
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -9,6 +11,7 @@ import com.postopia.ui.SharedViewModel
 import com.postopia.ui.components.PostList
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
@@ -30,15 +33,22 @@ fun HomeScreen(
         }
     }
 
-    PostList(
-        posts = uiState.spaceInfos,
-        isLoadingMore = uiState.isLoadingMore,
-        hasMore = uiState.hasMore,
-        onLoadMore = {
-            viewModel.handleEvent(HomeEvent.LoadMorePosts)
-        },
-        onPostClick = { spaceId, postId ->
-            navigateToPostDetail(spaceId, postId)
-        },
-    )
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = {viewModel.handleEvent(HomeEvent.Refresh)},
+    ) {
+        PostList(
+            posts = uiState.spaceInfos,
+            isLoadingMore = uiState.isLoadingMore,
+            hasMore = uiState.hasMore,
+            onLoadMore = {
+                viewModel.handleEvent(HomeEvent.LoadMorePosts)
+            },
+            onPostClick = { spaceId, postId ->
+                navigateToPostDetail(spaceId, postId)
+            },
+        )
+    }
+
 }
+

@@ -22,11 +22,13 @@ data class SpaceUiState(
     val hasMorePopularSpaces : Boolean = false,
     val hasMoreUserSpaces : Boolean = false,
     val isLoadingMorePopularSpaces : Boolean = false,
-    val isLoadingMoreUserSpaces : Boolean = false
+    val isLoadingMoreUserSpaces : Boolean = false,
+    val isRefreshing: Boolean = false,
 )
 
 sealed class SpaceEvent {
     object SnackbarMessageShown : SpaceEvent()
+    object Refresh : SpaceEvent()
     data class JoinOrLeave(val spaceId: Long, val join : Boolean) : SpaceEvent()
     data class LoadMoreSpaces(val isPopularSpaces: Boolean) : SpaceEvent()
 }
@@ -52,6 +54,18 @@ class SpaceViewModel @Inject constructor(
             }
             is SpaceEvent.LoadMoreSpaces -> {
                 loadMoreSpaces(event.isPopularSpaces)
+            }
+            is SpaceEvent.Refresh -> {
+                _uiState.update { it.copy(
+                    isRefreshing = true,
+                    popularSpacesPage = 0,
+                    userSpacesPage = 0,
+                    popularSpaces = emptyList(),
+                    userSpaces = emptyList(),
+                    hasMorePopularSpaces = false,
+                    hasMoreUserSpaces = false) }
+                loadSpaces()
+                _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }
