@@ -1,5 +1,6 @@
 package com.postopia.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -134,7 +135,11 @@ fun SingleCommentCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
     ) {
         Column(
             modifier = Modifier
@@ -170,7 +175,6 @@ fun SingleCommentCard(
                         Text(
                             text = "u/${uiState.authorName}",
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -180,7 +184,6 @@ fun SingleCommentCard(
                         Text(
                             text = "评论于",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.width(4.dp))
@@ -199,7 +202,6 @@ fun SingleCommentCard(
                         Text(
                             text = "中的",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.width(4.dp))
@@ -217,7 +219,6 @@ fun SingleCommentCard(
                 Text(
                     text = DateUtils.formatDate(uiState.createdAt),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -227,7 +228,6 @@ fun SingleCommentCard(
             Text(
                 text = AnnotatedString.fromHtml(uiState.content),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 20.sp
             )
         }
